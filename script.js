@@ -762,7 +762,7 @@
 							});
 						} else {
 							const arrayBuffer = await cv.arrayBuffer();
-							zipDocs.file("Lebenslauf_" + userGivenName + ".pdf", arrayBuffer);
+							zipDocs.file("Lebenslauf" + ".pdf", arrayBuffer);
 							console.log("766");
 							console.log(userGivenName);
 						}
@@ -774,7 +774,7 @@
 				await askUserForPreferredName(userFirstName, userMiddleName, userLastName, function(selectedName) {
 					userGivenName = selectedName;
 					const arrayBuffer = await coverLetter.arrayBuffer(); // Read PDF content
-					zipDocs.file('Anschreiben_' + userGivenName + ".pdf", arrayBuffer); // Add directly
+					zipDocs.file('Anschreiben' + ".pdf", arrayBuffer); // Add directly
 				}
 			}
 		});
@@ -968,3 +968,4 @@
 		extractCompanyName.callCount = undefined;
 		extractReferenceNumber.callCount = undefined;
 	}
+
