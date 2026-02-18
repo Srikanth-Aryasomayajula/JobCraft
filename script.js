@@ -548,7 +548,7 @@
 	async function generate(coverLetterURL, cvURL, certificatesURL, zipDocs, companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord) {
 		
 		// Process Cover Letter
-		loadFile(coverLetterURL, function(error, content) {
+		loadFile(coverLetterURL, async function(error, content) {
 			if (error) { throw error; }
 
 			function replaceErrors(key, value) {
@@ -695,7 +695,7 @@
 					zipDocs.file('Anschreiben_' + userGivenName + ".docx", out, { base64: true });
 
 					// Process CV
-					loadFile(cvURL, function(cvError, cvContent) {
+					loadFile(cvURL, async function(cvError, cvContent) {
 						if (cvError) { throw cvError; }
 
 						if (cv.name.endsWith('.pdf')) {
@@ -728,7 +728,7 @@
 							zipDocs.file("Lebenslauf_" + userGivenName + ".docx", cvOut, { base64: true });
 
 							// Process Certificates
-							loadFile(certificatesURL, function(certError, certContent) {
+							loadFile(certificatesURL, async function(certError, certContent) {
 								if (certError) { throw certError; }
 							
 								// Add certificates file to the zip (assuming no placeholders in certificates)
