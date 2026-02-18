@@ -103,22 +103,21 @@ async function processJobApplication() {
     contactPerson = extractContactPerson(jobDesc);
 	jobTitle = extractJobTitle(jobDesc);
 
-	// Only process cover letter if DOCX
-    if (!coverLetter.name.endsWith(".pdf")) {
-		try {
-			// Process CV and Cover Letter separately
-			const { salutation, lastName, newAddress, newRef_type, newRef_number, newCompanyFirstWord } = await processCoverLetter(coverLetter, companyName, contactPerson, jobTitle, jobDesc);
-			
-			var zipDocs = new PizZip();
-			
-			await generate(coverLetterURL, cvURL, certificatesURL, zipDocs, companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord);
 
-		} catch (error) {
-			console.error("Error processing job application:", error);
-		}
-	
-		return {coverLetterURL, cvURL, certificatesURL, newCompanyFirstWord};
-	};
+	try {
+		// Process CV and Cover Letter separately
+		const { salutation, lastName, newAddress, newRef_type, newRef_number, newCompanyFirstWord } = await processCoverLetter(coverLetter, companyName, contactPerson, jobTitle, jobDesc);
+		
+		var zipDocs = new PizZip();
+		
+		await generate(coverLetterURL, cvURL, certificatesURL, zipDocs, companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord);
+
+	} catch (error) {
+		console.error("Error processing job application:", error);
+	}
+
+	return {coverLetterURL, cvURL, certificatesURL, newCompanyFirstWord};
+
 }
 
 // Function to process and modify CV
@@ -147,59 +146,68 @@ async function processCoverLetter(file, companyName, contactPerson, jobTitle, jo
 	
 	if (file.name.endsWith(".pdf")) {
 		docText = await extractTextFromPDF(file);
+		companyName = "Unknown";
+		salutation = "Unknown";
+		lastName = "Unknown";
+		jobTitle = "Unknown";
+		newAddress = "Unknown";
+		newRef_type = "Unknown";
+		newRef_number = "Unknown";
+		newCompanyFirstWord = "Unknown";
+		return {companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord};
 	} else {
 		const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
 		docText = result.value;
-	}
 	
-	const oldCompanyName = extractCompanyName(docText);
+		const oldCompanyName = extractCompanyName(docText);
 	
-    // Modify company name
-    docText = docText.replace(oldCompanyName, companyName);
+		// Modify company name
+		docText = docText.replace(oldCompanyName, companyName);
 	
-	// Extract the first word of both the old and new company names
-	const oldCompanyFirstWord = oldCompanyName.split(' ')[0]; // First word of the old company
-	newCompanyFirstWord = companyName.split(' ')[0]; // First word of the new company;
-	docText = docText.replace(oldCompanyFirstWord, newCompanyFirstWord);
+		// Extract the first word of both the old and new company names
+		const oldCompanyFirstWord = oldCompanyName.split(' ')[0]; // First word of the old company
+		newCompanyFirstWord = companyName.split(' ')[0]; // First word of the new company;
+		docText = docText.replace(oldCompanyFirstWord, newCompanyFirstWord);
 	
-	// Determine salutation based on the contact person's title
-    let salutation;
-    if (contactPerson.startsWith('Herr')) {
-        salutation = 'Sehr geehrter';
-    } else if (contactPerson.startsWith('Frau')) {
-        salutation = 'Sehr geehrte';
-    } else if (contactPerson.startsWith('Dr')){
-		salutation = 'Sehr geehrte(r)';
-	} else if (contactPerson.startsWith('Mr')||contactPerson.startsWith('Ms')||contactPerson.startsWith('Mrs')) {
-        salutation = 'Dear';
-	}
-	else {
-        salutation = 'Sehr geehrte'; // Default to "Sehr geehrte" for any other titles
-    }
-	
-	// Replace the salutation in the cover letter
-	const lastName = getTitleAndLastName(contactPerson);
-    docText = docText.replace(/(Sehr geehrter|Sehr geehrte|Dear) [^\n]+/, `${salutation} ${lastName},`);
+		// Determine salutation based on the contact person's title
+		let salutation;
+		if (contactPerson.startsWith('Herr')) {
+			salutation = 'Sehr geehrter';
+		} else if (contactPerson.startsWith('Frau')) {
+			salutation = 'Sehr geehrte';
+		} else if (contactPerson.startsWith('Dr')){
+			salutation = 'Sehr geehrte(r)';
+		} else if (contactPerson.startsWith('Mr')||contactPerson.startsWith('Ms')||contactPerson.startsWith('Mrs')) {
+			salutation = 'Dear';
+		}
+		else {
+			salutation = 'Sehr geehrte'; // Default to "Sehr geehrte" for any other titles
+		}
+		
+		// Replace the salutation in the cover letter
+		const lastName = getTitleAndLastName(contactPerson);
+		docText = docText.replace(/(Sehr geehrter|Sehr geehrte|Dear) [^\n]+/, `${salutation} ${lastName},`);
 
-    // Replace the subject
-	const oldJobTitle = (docText.match(/Bewerbung:\s*(.*)/) || [])[1]?.trim();
-	docText = docText.replace(oldJobTitle,jobTitle);
-	
-	// Replace the address
-	oldAddress = extractAddress(docText);
-	newAddress = extractAddress(jobDesc);
-	docText = docText.replace(oldAddress,newAddress);
-	
-	const newRef = extractReferenceNumber(jobDesc).type + ": " + extractReferenceNumber(jobDesc).number;
-	const oldRef = (docText.match(/(Referenznummer|Kennziffer|Reference number|Reference No|Reference No.|Referenz|Reference|):\s*(.*)/) || [])[0]?.trim(); // When modifying the search words here, also modify in function extractReferenceNumber(jobDesc)
+		// Replace the subject
+		const oldJobTitle = (docText.match(/Bewerbung:\s*(.*)/) || [])[1]?.trim();
+		docText = docText.replace(oldJobTitle,jobTitle);
+		
+		// Replace the address
+		oldAddress = extractAddress(docText);
+		newAddress = extractAddress(jobDesc);
+		docText = docText.replace(oldAddress,newAddress);
+		
+		const newRef = extractReferenceNumber(jobDesc).type + ": " + extractReferenceNumber(jobDesc).number;
+		const oldRef = (docText.match(/(Referenznummer|Kennziffer|Reference number|Reference No|Reference No.|Referenz|Reference|):\s*(.*)/) || [])[0]?.trim(); // When modifying the search words here, also modify in function extractReferenceNumber(jobDesc)
 
-	docText = docText.replace(oldRef,newRef);
-	const newRef_type = extractReferenceNumber(jobDesc).type;
-	const newRef_number = extractReferenceNumber(jobDesc).number;
-	
-	docText = docText.replace(findDateInText(docText), getCurrentDate());
+		docText = docText.replace(oldRef,newRef);
+		const newRef_type = extractReferenceNumber(jobDesc).type;
+		const newRef_number = extractReferenceNumber(jobDesc).number;
+		
+		docText = docText.replace(findDateInText(docText), getCurrentDate());
 
-	return {companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord};
+		return {companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord};
+	};
 }
 
 // Helper function to extract text from a Word document
