@@ -123,8 +123,15 @@ async function processCV(file, companyName, contactPerson, language) {
     const arrayBuffer = await file.arrayBuffer();
 
     // Extract text from the CV document
-    const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+    // const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
     let docText = result.value;
+	
+	if (file.name.endsWith(".pdf")) {
+		docText = await extractTextFromPDF(file);
+	} else {
+		const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+		docText = result.value;
+	}
 }
 
 // Function to process and modify Cover Letter
@@ -132,8 +139,15 @@ async function processCoverLetter(file, companyName, contactPerson, jobTitle, jo
     const arrayBuffer = await file.arrayBuffer();
 
     // Extract text from the Cover Letter document
-    const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+    // const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
     let docText = result.value;
+	
+	if (file.name.endsWith(".pdf")) {
+		docText = await extractTextFromPDF(file);
+	} else {
+		const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+		docText = result.value;
+	}
 	
 	const oldCompanyName = extractCompanyName(docText);
 	
@@ -190,6 +204,23 @@ async function extractTextFromDoc(docFile) {
     const arrayBuffer = await docFile.arrayBuffer();
     const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
     return result.value;
+}
+
+// Helper function to extract text from PDF
+async function extractTextFromPDF(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+    let fullText = '';
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const strings = content.items.map(item => item.str);
+        fullText += strings.join(' ') + '\n';
+    }
+
+    return fullText;
 }
 
 // Function to save files on the client's machine
@@ -884,3 +915,4 @@ function resetVariables() {
 	extractCompanyName.callCount = undefined;
 	extractReferenceNumber.callCount = undefined;
 }
+
