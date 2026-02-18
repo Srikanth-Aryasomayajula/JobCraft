@@ -37,8 +37,10 @@
 		let userLastName = '';
 		let userGivenName = '';
 		
+		console.log("40");
 		// Perform the necessary changes to the CV, cover letter and other documents and zip them
 		newCompanyFirstWord = (await processJobApplication()).newCompanyFirstWord;
+		console.log("43");
 	}
 
 	// Validate inputs and highlight empty fields
@@ -87,6 +89,7 @@
 		if (!validateInputs()) {
 			return; // Exit if validation fails
 		}
+		console.log("92");
 		
 		let newCompanyFirstWord;
 		
@@ -95,19 +98,20 @@
 		const coverLetter = document.getElementById("cover-letter-upload").files[0];
 		const certificates = document.getElementById("certificates-upload").files[0];
 		
+		console.log("101")
 		// Create a URL for the uploaded files
 		const coverLetterURL = URL.createObjectURL(coverLetter);
 		const cvURL = URL.createObjectURL(cv);
 		const certificatesURL = URL.createObjectURL(certificates);
 
 		// Extract company name and contact person from the job description
-		console.log("104");
+		console.log("104")
 		companyName = extractCompanyName(jobDesc);
-		console.log("106");
+		console.log("106")
 		contactPerson = extractContactPerson(jobDesc);
-		console.log("108");
+		console.log("108")
 		jobTitle = extractJobTitle(jobDesc);
-		console.log("110");
+		console.log("110")
 
 
 		try {
