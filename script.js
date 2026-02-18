@@ -595,34 +595,34 @@
 			}
 
 			// Function to display the alert with buttons based on the extracted name
-			function askUserForPreferredName(firstName, middleName, lastName, callback) {
-				const nameParts = [firstName, middleName, lastName].filter(Boolean); // Only include non-empty values
-			
+			function askUserForPreferredName(firstName, middleName, lastName) {
+				const nameParts = [firstName, middleName, lastName].filter(Boolean);
+
 				const nameSelectionModal = document.getElementById('nameSelectionModal');
-				
-				// Show the name selection modal
-				nameSelectionModal.style.display = 'block';
-			
 				const modalButtonsContainer = nameSelectionModal.querySelector('.modal-buttons');
-				modalButtonsContainer.innerHTML = ''; // Clear any existing buttons
-			
-				if (nameParts.length === 1) {
-					userGivenName = nameParts[0];
-					callback(userGivenName);
-					nameSelectionModal.style.display = 'none'; // Hide modal
-				} else {
-					nameParts.forEach(name => {
-						const button = document.createElement('button');
-						button.textContent = name;
-						button.addEventListener('click', function() {
-							userGivenName = setUserGivenName(name);
-							callback(userGivenName); 
-							nameSelectionModal.style.display = 'none'; // Hide modal
+				modalButtonsContainer.innerHTML = '';
+				nameSelectionModal.style.display = 'block';
+
+				return new Promise((resolve) => {
+					if (nameParts.length === 1) {
+						userGivenName = nameParts[0];
+						nameSelectionModal.style.display = 'none';
+						resolve(userGivenName);
+					} else {
+						nameParts.forEach(name => {
+							const button = document.createElement('button');
+							button.textContent = name;
+							button.addEventListener('click', () => {
+								userGivenName = name; // set global
+								nameSelectionModal.style.display = 'none';
+								resolve(userGivenName);
+							});
+							modalButtonsContainer.appendChild(button);
 						});
-						modalButtonsContainer.appendChild(button); // Append button to modal
-					});
-				}
+					}
+				});
 			}
+
 
 			// Helper function to assign userGivenName when the user clicks a button
 			function setUserGivenName(selectedName) {
@@ -684,7 +684,7 @@
 					userLastName = '';
 				}
 
-				askUserForPreferredName(userFirstName, userMiddleName, userLastName, function(selectedName) {
+				await askUserForPreferredName(userFirstName, userMiddleName, userLastName, function(selectedName) {
 					userGivenName = selectedName;
 				
 					var out = coverLetterDoc.getZip().generate();
