@@ -145,15 +145,15 @@ async function processCoverLetter(file, companyName, contactPerson, jobTitle, jo
     let docText = result.value;
 	
 	if (file.name.endsWith(".pdf")) {
-		docText = await extractTextFromPDF(file);
-		companyName = "Unknown";
-		salutation = "Unknown";
-		lastName = "Unknown";
-		jobTitle = "Unknown";
-		newAddress = "Unknown";
-		newRef_type = "Unknown";
-		newRef_number = "Unknown";
-		newCompanyFirstWord = "Unknown";
+		const docText = await extractTextFromPDF(file);
+		const companyName = "Unknown";
+		const salutation = "Unknown";
+		const lastName = "Unknown";
+		const jobTitle = "Unknown";
+		const newAddress = "Unknown";
+		const newRef_type = "Unknown";
+		const newRef_number = "Unknown";
+		const newCompanyFirstWord = "Unknown";
 		return {companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord};
 	} else {
 		const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
