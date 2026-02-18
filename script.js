@@ -771,7 +771,20 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 			});
 
 			return coverLetterText;
-		} 
+		} else {
+			
+			const arrayBuffer = await coverLetter.arrayBuffer(); // Read PDF content
+			zipDocs.file('Anschreiben' + ".pdf", arrayBuffer); // Add directly
+			
+			if (cv.name.endsWith('.pdf')){
+				const arrayBuffer = await cv.arrayBuffer();
+				zipDocs.file("Lebenslauf" + ".pdf", arrayBuffer);
+				console.log("766");
+				console.log(userGivenName);
+			} else {
+				// goto loadFile(cvURL, async function(cvError, cvContent)
+			}
+		}
 	});
 }
 
@@ -963,4 +976,3 @@ function resetVariables() {
 	extractCompanyName.callCount = undefined;
 	extractReferenceNumber.callCount = undefined;
 }
-
