@@ -775,11 +775,16 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 			
 			const arrayBuffer = await coverLetter.arrayBuffer(); // Read PDF content
 			zipDocs.file('Anschreiben' + ".pdf", arrayBuffer); // Add directly
+			coverLetterText = arrayBuffer;
+			console.log(coverLetterText);
+			
 			
 			if (cv.name.endsWith('.pdf')){
 				const arrayBuffer = await cv.arrayBuffer();
 				zipDocs.file("Lebenslauf" + ".pdf", arrayBuffer);
 				console.log("766");
+				cvText = arrayBuffer;
+				console.log(cvText);
 				// console.log(userGivenName);
 			} else {
 				// goto loadFile(cvURL, async function(cvError, cvContent)
@@ -976,4 +981,3 @@ function resetVariables() {
 	extractCompanyName.callCount = undefined;
 	extractReferenceNumber.callCount = undefined;
 }
-
