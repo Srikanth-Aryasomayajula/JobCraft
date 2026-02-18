@@ -773,7 +773,6 @@
 			} else {
 					const arrayBuffer = await coverLetter.arrayBuffer(); // Read PDF content
 					zipDocs.file('Anschreiben' + ".pdf", arrayBuffer); // Add directly
-				}
 			}
 		});
 	}
@@ -966,5 +965,6 @@
 		extractCompanyName.callCount = undefined;
 		extractReferenceNumber.callCount = undefined;
 	}
+
 
 
