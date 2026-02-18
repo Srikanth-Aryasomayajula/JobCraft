@@ -686,92 +686,91 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 			}
 
 			console.log("688");
-				
-			askUserForPreferredName(userFirstName, userMiddleName, userLastName, function(selectedName) {
-				userGivenName = selectedName;
-				console.log("692");
-				var out = coverLetterDoc.getZip().generate();
-				zipDocs.file('Anschreiben_' + userGivenName + ".docx", out, { base64: true });
-				console.log("695");
-				// Process CV
-				loadFile(cvURL, async function(cvError, cvContent) {
-					console.log("698");
-					if (cvError) { throw cvError; }
-					console.log("700");
-					if (!cv.name.endsWith('.pdf')) {
-						console.log("702");
-						var cvZip = new PizZip(cvContent);
-						var cvDoc;
-						try {
-							cvDoc = new window.docxtemplater(cvZip);
-						} catch (error) {
-							errorHandler(error);
-						}
-
-						cvDoc.setData({
-							date: getCurrentDate() // Add any additional placeholders for the CV here
-						});
-
-						try {
-							cvDoc.render();
-						
-							// Extract the complete CV content as text
-							cvText = cvDoc.getFullText();
-
-						} catch (error) {
-							errorHandler(error);
-						}
-
-						var cvOut = cvDoc.getZip().generate();
-						zipDocs.file("Lebenslauf_" + userGivenName + ".docx", cvOut, { base64: true });
-
-						// Process Certificates
-						loadFile(certificatesURL, async function(certError, certContent) {
-							if (certError) { throw certError; }
-						
-							// Add certificates file to the zip (assuming no placeholders in certificates)
-							zipDocs.file("Weiteren-Unterlagen_" + userGivenName + ".pdf", certContent, { base64: true });
-								
-							console.log("734");
-							
-							// Generate the ZIP file with cover letter, CV, and certificates
-							var content = zipDocs.generate({ type: "blob" });
-							saveAs(content, "Application_Documents.zip");
-						
-							// Delete the count keepers in the functions
-							delete extractAddress.callCount;
-							delete extractReferenceNumber.callCount;
-						
-							// Find the word 'undefined' in CV and cover letter
-							highlightUndefinedInDocuments(cvText, coverLetterText);
-							
-							// Return folder name (optional)
-							// Show folder name confirmation modal
-							document.getElementById('folderNameModal').style.display = 'block';
 			
-							// Button handlers for folder name modal
-							document.getElementById('yesFolderButton').onclick = function() {
-								folderNameLocation(); // Call folder name location function
-								document.getElementById('folderNameHeading').style.display = 'block'; // Show the heading
-								document.getElementById('folderNameContainer').style.display = 'block'; // Show the folder name container
-								document.getElementById('folderNameModal').style.display = 'none'; // Hide the modal
-							};
+			userGivenName = await askUserForPreferredName(userFirstName, userMiddleName, userLastName);
 			
-							document.getElementById('noFolderButton').onclick = function() {
-								document.getElementById('folderNameHeading').style.display = 'none'; // Hide the heading
-								document.getElementById('folderNameContainer').style.display = 'none'; // Hide the folder name container
-								document.getElementById('folderNameModal').style.display = 'none'; // Hide the modal
-								document.getElementById('folderNameLocation').innerHTML = ''; // Clear any existing folder name content
-							};
+			console.log("692");
+			var out = coverLetterDoc.getZip().generate();
+			zipDocs.file('Anschreiben_' + userGivenName + ".docx", out, { base64: true });
+			console.log("695");
+			// Process CV
+			loadFile(cvURL, async function(cvError, cvContent) {
+				console.log("698");
+				if (cvError) { throw cvError; }
+				console.log("700");
+				if (!cv.name.endsWith('.pdf')) {
+					console.log("702");
+					var cvZip = new PizZip(cvContent);
+					var cvDoc;
+					try {
+						cvDoc = new window.docxtemplater(cvZip);
+					} catch (error) {
+						errorHandler(error);
+					}
 
-							// Perform ATS check
-							performATSCheck();
-						});
-					} 
-				});
+					cvDoc.setData({
+						date: getCurrentDate() // Add any additional placeholders for the CV here
+					});
 
-				return coverLetterText;
+					try {
+						cvDoc.render();
+					
+						// Extract the complete CV content as text
+						cvText = cvDoc.getFullText();
+
+					} catch (error) {
+						errorHandler(error);
+					}
+
+					var cvOut = cvDoc.getZip().generate();
+					zipDocs.file("Lebenslauf_" + userGivenName + ".docx", cvOut, { base64: true });
+
+					// Process Certificates
+					loadFile(certificatesURL, async function(certError, certContent) {
+						if (certError) { throw certError; }
+					
+						// Add certificates file to the zip (assuming no placeholders in certificates)
+						zipDocs.file("Weiteren-Unterlagen_" + userGivenName + ".pdf", certContent, { base64: true });
+							
+						console.log("734");
+						
+						// Generate the ZIP file with cover letter, CV, and certificates
+						var content = zipDocs.generate({ type: "blob" });
+						saveAs(content, "Application_Documents.zip");
+					
+						// Delete the count keepers in the functions
+						delete extractAddress.callCount;
+						delete extractReferenceNumber.callCount;
+					
+						// Find the word 'undefined' in CV and cover letter
+						highlightUndefinedInDocuments(cvText, coverLetterText);
+						
+						// Return folder name (optional)
+						// Show folder name confirmation modal
+						document.getElementById('folderNameModal').style.display = 'block';
+		
+						// Button handlers for folder name modal
+						document.getElementById('yesFolderButton').onclick = function() {
+							folderNameLocation(); // Call folder name location function
+							document.getElementById('folderNameHeading').style.display = 'block'; // Show the heading
+							document.getElementById('folderNameContainer').style.display = 'block'; // Show the folder name container
+							document.getElementById('folderNameModal').style.display = 'none'; // Hide the modal
+						};
+		
+						document.getElementById('noFolderButton').onclick = function() {
+							document.getElementById('folderNameHeading').style.display = 'none'; // Hide the heading
+							document.getElementById('folderNameContainer').style.display = 'none'; // Hide the folder name container
+							document.getElementById('folderNameModal').style.display = 'none'; // Hide the modal
+							document.getElementById('folderNameLocation').innerHTML = ''; // Clear any existing folder name content
+						};
+
+						// Perform ATS check
+						performATSCheck();
+					});
+				} 
 			});
+
+			return coverLetterText;
 		} 
 	});
 }
