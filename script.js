@@ -780,7 +780,7 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 				const arrayBuffer = await cv.arrayBuffer();
 				zipDocs.file("Lebenslauf" + ".pdf", arrayBuffer);
 				console.log("766");
-				console.log(userGivenName);
+				// console.log(userGivenName);
 			} else {
 				// goto loadFile(cvURL, async function(cvError, cvContent)
 			}
@@ -976,3 +976,4 @@ function resetVariables() {
 	extractCompanyName.callCount = undefined;
 	extractReferenceNumber.callCount = undefined;
 }
+
