@@ -121,7 +121,7 @@
 			console.log("113");
 			var zipDocs = new PizZip();
 			
-			await generate(coverLetterURL, cvURL, certificatesURL, zipDocs, companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord);
+			await generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL, zipDocs, companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord);
 
 		} catch (error) {
 			console.error("Error processing job application:", error);
@@ -545,7 +545,7 @@
 	}
 
 	// Function to generate zip file from the given files
-	async function generate(coverLetterURL, cvURL, certificatesURL, zipDocs, companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord) {
+	async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL, zipDocs, companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord) {
 		
 		// Process Cover Letter
 		loadFile(coverLetterURL, async function(error, content) {
