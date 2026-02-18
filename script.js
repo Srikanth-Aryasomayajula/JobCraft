@@ -129,6 +129,7 @@ async function processCV(file, companyName, contactPerson, language) {
     let docText = result.value;
 	
 	if (file.name.endsWith(".pdf")) {
+		console.log("test pdf")
 		docText = await extractTextFromPDF(file);
 	} else {
 		const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
