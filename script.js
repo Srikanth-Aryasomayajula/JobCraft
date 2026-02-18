@@ -771,8 +771,6 @@
 					return coverLetterText;
 				});
 			} else {
-				await askUserForPreferredName(userFirstName, userMiddleName, userLastName, function(selectedName) {
-					userGivenName = selectedName;
 					const arrayBuffer = await coverLetter.arrayBuffer(); // Read PDF content
 					zipDocs.file('Anschreiben' + ".pdf", arrayBuffer); // Add directly
 				}
@@ -968,4 +966,5 @@
 		extractCompanyName.callCount = undefined;
 		extractReferenceNumber.callCount = undefined;
 	}
+
 
