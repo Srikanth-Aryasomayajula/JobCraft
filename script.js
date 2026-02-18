@@ -129,14 +129,15 @@ async function processCV(file, companyName, contactPerson, language) {
 
     // Extract text from the CV document
     // const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-    let docText = result.value;
+    
 	
 	if (file.name.endsWith(".pdf")) {
 		console.log("135")
 		docText = await extractTextFromPDF(file);
 	} else {
 		const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-		docText = result.value;
+		let docText = result.value;
+		//docText = result.value;
 	}
 }
 
@@ -146,7 +147,7 @@ async function processCoverLetter(file, companyName, contactPerson, jobTitle, jo
 
     // Extract text from the Cover Letter document
     // const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-    let docText = result.value;
+    
 	
 	if (file.name.endsWith(".pdf")) {
 		const docText = await extractTextFromPDF(file);
@@ -161,7 +162,7 @@ async function processCoverLetter(file, companyName, contactPerson, jobTitle, jo
 		return {companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord};
 	} else {
 		const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-		docText = result.value;
+		let docText = result.value;
 	
 		const oldCompanyName = extractCompanyName(docText);
 	
