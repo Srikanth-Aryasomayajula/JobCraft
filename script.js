@@ -637,23 +637,49 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 		}
 
 		// Extract the user's name from the cover letter
-		async function extractUserName(coverLetterText){
-			const nameMatch = extractUserNameFromCoverLetter(coverLetterText);
-			if (nameMatch && nameMatch.length > 0) {
-				// Extract first, middle, and last name in a single line
-				[userFirstName = '', userMiddleName = '', userLastName = ''] = nameMatch[0].slice(1); 
-			} else {
-				// If no name was extracted, prompt the user to type their name
-				const typedName = prompt("Your name could not be extracted from your cover letter. Please enter your full name so that I could add it to your documents.");
-				userFirstName = typedName || "Unnamed"; // Assign the typed name or "Unnamed" if they leave it empty
-				userMiddleName = '';
-				userLastName = '';
-			}
+		async function extractUserName(coverLetterText) {
+			return new Promise(async (resolve) => {
 
-			console.log("688");
-			
-			userGivenName = await askUserForPreferredName(userFirstName, userMiddleName, userLastName);
+				const nameMatch = extractUserNameFromCoverLetter(coverLetterText);
+
+				if (nameMatch && nameMatch.length > 0) {
+					[userFirstName = '', userMiddleName = '', userLastName = ''] =
+						nameMatch[0].slice(1);
+				} else {
+					const typedName = prompt(
+						"Your name could not be extracted from your cover letter. Please enter your full name so that I could add it to your documents."
+					);
+
+					if (typedName) {
+						const parts = typedName.trim().split(" ");
+						userFirstName = parts[0] || '';
+						userMiddleName = parts.length === 3 ? parts[1] : '';
+						userLastName = parts.length > 1 ? parts[parts.length - 1] : '';
+					} else {
+						userFirstName = "Unnamed";
+						userMiddleName = '';
+						userLastName = '';
+					}
+				}
+
+				try {
+					userGivenName = await askUserForPreferredName(
+						userFirstName,
+						userMiddleName,
+						userLastName
+					);
+
+					console.log("Selected userGivenName:", userGivenName);
+
+					resolve(userGivenName);
+
+				} catch (error) {
+					console.error("Error selecting preferred name:", error);
+					resolve("Unnamed");
+				}
+			});
 		}
+
 
 		// Create new cover letter
 		if (!coverLetter.name.endsWith('.pdf')) {	
