@@ -689,10 +689,10 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 				
 			askUserForPreferredName(userFirstName, userMiddleName, userLastName, function(selectedName) {
 				userGivenName = selectedName;
-			
+				console.log("692");
 				var out = coverLetterDoc.getZip().generate();
 				zipDocs.file('Anschreiben_' + userGivenName + ".docx", out, { base64: true });
-
+				console.log("695");
 				// Process CV
 				loadFile(cvURL, async function(cvError, cvContent) {
 					console.log("698");
@@ -964,5 +964,4 @@ function resetVariables() {
 	extractCompanyName.callCount = undefined;
 	extractReferenceNumber.callCount = undefined;
 }
-
 
