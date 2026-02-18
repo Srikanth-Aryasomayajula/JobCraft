@@ -775,7 +775,9 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 			
 			const arrayBuffer = await coverLetter.arrayBuffer(); // Read PDF content
 			zipDocs.file('Anschreiben' + ".pdf", arrayBuffer); // Add directly
-			coverLetterText = arrayBuffer;
+			
+			coverLetterText = await extractTextFromPDF(coverLetter);
+
 			console.log(coverLetterText);
 			
 			
@@ -783,7 +785,7 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 				const arrayBuffer = await cv.arrayBuffer();
 				zipDocs.file("Lebenslauf" + ".pdf", arrayBuffer);
 				console.log("766");
-				cvText = arrayBuffer;
+				cvText = await extractTextFromPDF(cv);
 				console.log(cvText);
 				// console.log(userGivenName);
 			} else {
