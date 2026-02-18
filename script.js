@@ -687,7 +687,7 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 
 			console.log("688");
 				
-			await askUserForPreferredName(userFirstName, userMiddleName, userLastName, function(selectedName) {
+			askUserForPreferredName(userFirstName, userMiddleName, userLastName, function(selectedName) {
 				userGivenName = selectedName;
 			
 				var out = coverLetterDoc.getZip().generate();
@@ -964,4 +964,5 @@ function resetVariables() {
 	extractCompanyName.callCount = undefined;
 	extractReferenceNumber.callCount = undefined;
 }
+
 
