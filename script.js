@@ -225,29 +225,31 @@ async function extractTextFromDoc(docFile) {
 // Helper function to extract text from PDF
 async function extractTextFromPDF(file) {
     return new Promise((resolve, reject) => {
-        const file_reader = new FileReader();
+        const reader = new FileReader();
+        reader.onload = async function () {
+            const typedarray = new Uint8Array(reader.result);
 
-        file_reader.onload = function (event) {
             try {
-                const json = AsposePdfExtractText(event.target.result, file.name);
+                // Load the PDF
+                const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
 
-                if (json.errorCode === 0) {
-                    const fullText = json.extractText;  // store in fullText
-                    resolve(fullText);                  // return fullText
-                } else {
-                    reject(json.errorText);
+                let fullText = '';
+                // Loop through each page
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    // Concatenate all text items
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += pageText + '\n';
                 }
 
-            } catch (error) {
-                reject(error);
+                resolve(fullText);
+            } catch (err) {
+                reject(err);
             }
         };
-
-        file_reader.onerror = function (error) {
-            reject(error);
-        };
-
-        file_reader.readAsArrayBuffer(file);
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
     });
 }
 
