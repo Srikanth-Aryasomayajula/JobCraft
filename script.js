@@ -595,35 +595,30 @@
 			}
 
 			// Function to display the alert with buttons based on the extracted name
-			function askUserForPreferredName(firstName, middleName, lastName, callback) {
-				const nameParts = [firstName, middleName, lastName].filter(Boolean); // Only include non-empty values
-			
+			function askUserForPreferredName(firstName, middleName, lastName) {
+				const nameParts = [firstName, middleName, lastName].filter(Boolean); // Only non-empty
+
 				const nameSelectionModal = document.getElementById('nameSelectionModal');
-				
-				// Show the name selection modal
-				nameSelectionModal.style.display = 'block';
-			
 				const modalButtonsContainer = nameSelectionModal.querySelector('.modal-buttons');
-				modalButtonsContainer.innerHTML = ''; // Clear any existing buttons
-			
-				if (nameParts.length === 1) {
-					userGivenName = nameParts[0];
-					callback(userGivenName);
-					nameSelectionModal.style.display = 'none'; // Hide modal
-				} else {
-					nameParts.forEach(name => {
-						const button = document.createElement('button');
-						button.textContent = name;
-						button.addEventListener('click', function() {
-							userGivenName = setUserGivenName(name);
-							callback(userGivenName); 
-							nameSelectionModal.style.display = 'none'; // Hide modal
+				modalButtonsContainer.innerHTML = ''; // Clear old buttons
+				nameSelectionModal.style.display = 'block';
+
+				return new Promise((resolve) => {
+					if (nameParts.length === 1) {
+						nameSelectionModal.style.display = 'none';
+						resolve(nameParts[0]);
+					} else {
+						nameParts.forEach(name => {
+							const button = document.createElement('button');
+							button.textContent = name;
+							button.addEventListener('click', function() {
+								nameSelectionModal.style.display = 'none';
+								resolve(name);
+							});
+							modalButtonsContainer.appendChild(button);
 						});
-						modalButtonsContainer.appendChild(button); // Append button to modal
-					});
-				}
-				
-				return userGivenName;
+					}
+				});
 			}
 
 			// Helper function to assign userGivenName when the user clicks a button
@@ -641,6 +636,7 @@
 			// Create new cover letter
 			if (coverLetter.name.endsWith('.pdf')) {
 				const arrayBuffer = await coverLetter.arrayBuffer(); // Read PDF content
+				const userGivenName = await askUserForPreferredName(userFirstName, userMiddleName, userLastName);
 				zipDocs.file('Anschreiben_' + userGivenName + ".pdf", arrayBuffer); // Add directly
 			} else {
 			
