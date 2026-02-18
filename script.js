@@ -763,6 +763,8 @@
 						} else {
 							const arrayBuffer = await cv.arrayBuffer();
 							zipDocs.file("Lebenslauf_" + userGivenName + ".pdf", arrayBuffer);
+							console.log("766");
+							console.log(userGivenName);
 						}
 					});
 
