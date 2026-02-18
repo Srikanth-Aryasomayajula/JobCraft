@@ -638,6 +638,7 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 
 		// Create new cover letter
 		if (!coverLetter.name.endsWith('.pdf')) {	
+			console.log("641");
 			var zip = new PizZip(content);
 			var coverLetterDoc;
 			try {
@@ -684,6 +685,8 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 				userLastName = '';
 			}
 
+			console.log("688");
+				
 			await askUserForPreferredName(userFirstName, userMiddleName, userLastName, function(selectedName) {
 				userGivenName = selectedName;
 			
@@ -695,6 +698,7 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 					if (cvError) { throw cvError; }
 
 					if (!cv.name.endsWith('.pdf')) {
+						console.log("701");
 						var cvZip = new PizZip(cvContent);
 						var cvDoc;
 						try {
@@ -726,7 +730,9 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 						
 							// Add certificates file to the zip (assuming no placeholders in certificates)
 							zipDocs.file("Weiteren-Unterlagen_" + userGivenName + ".pdf", certContent, { base64: true });
-
+								
+							console.log("734");
+							
 							// Generate the ZIP file with cover letter, CV, and certificates
 							var content = zipDocs.generate({ type: "blob" });
 							saveAs(content, "Application_Documents.zip");
