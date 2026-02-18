@@ -636,6 +636,25 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 			return userGivenName;
 		}
 
+		// Extract the user's name from the cover letter
+		function extractUserName(coverLetterText){
+			const nameMatch = extractUserNameFromCoverLetter(coverLetterText);
+			if (nameMatch && nameMatch.length > 0) {
+				// Extract first, middle, and last name in a single line
+				[userFirstName = '', userMiddleName = '', userLastName = ''] = nameMatch[0].slice(1); 
+			} else {
+				// If no name was extracted, prompt the user to type their name
+				const typedName = prompt("Your name could not be extracted from your cover letter. Please enter your full name so that I could add it to your documents.");
+				userFirstName = typedName || "Unnamed"; // Assign the typed name or "Unnamed" if they leave it empty
+				userMiddleName = '';
+				userLastName = '';
+			}
+
+			console.log("688");
+			
+			userGivenName = await askUserForPreferredName(userFirstName, userMiddleName, userLastName);
+		}
+
 		// Create new cover letter
 		if (!coverLetter.name.endsWith('.pdf')) {	
 			console.log("641");
@@ -672,22 +691,7 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 				errorHandler(error);
 			}
 
-			// Extract the user's name from the cover letter
-			const nameMatch = extractUserNameFromCoverLetter(coverLetterText);
-			if (nameMatch && nameMatch.length > 0) {
-				// Extract first, middle, and last name in a single line
-				[userFirstName = '', userMiddleName = '', userLastName = ''] = nameMatch[0].slice(1); 
-			} else {
-				// If no name was extracted, prompt the user to type their name
-				const typedName = prompt("Your name could not be extracted from your cover letter. Please enter your full name so that I could add it to your documents.");
-				userFirstName = typedName || "Unnamed"; // Assign the typed name or "Unnamed" if they leave it empty
-				userMiddleName = '';
-				userLastName = '';
-			}
-
-			console.log("688");
-			
-			userGivenName = await askUserForPreferredName(userFirstName, userMiddleName, userLastName);
+			extractUserName(coverLetterText);
 			
 			console.log("692");
 			var out = coverLetterDoc.getZip().generate();
