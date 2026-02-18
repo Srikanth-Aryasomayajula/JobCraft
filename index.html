@@ -150,6 +150,12 @@ This tool is designed to assist individuals, particularly those who are unemploy
 	<!-- Floating "Back to Top" button -->
     <button onclick="scrollToTop()" id="backToTopBtn" style="display: none;">&#129093; Top</button>
 
+
+	<!-- Worker setup -->
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+    </script>
     <script src="script.js"></script>
 	
 	<!-- Floating "Back to Top" button functions -->
@@ -177,6 +183,7 @@ This tool is designed to assist individuals, particularly those who are unemploy
 
 </body>
 </html>
+
 
 
 
