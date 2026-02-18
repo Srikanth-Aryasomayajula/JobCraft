@@ -595,30 +595,33 @@
 			}
 
 			// Function to display the alert with buttons based on the extracted name
-			function askUserForPreferredName(firstName, middleName, lastName) {
-				const nameParts = [firstName, middleName, lastName].filter(Boolean); // Only non-empty
-
+			function askUserForPreferredName(firstName, middleName, lastName, callback) {
+				const nameParts = [firstName, middleName, lastName].filter(Boolean); // Only include non-empty values
+			
 				const nameSelectionModal = document.getElementById('nameSelectionModal');
-				const modalButtonsContainer = nameSelectionModal.querySelector('.modal-buttons');
-				modalButtonsContainer.innerHTML = ''; // Clear old buttons
+				
+				// Show the name selection modal
 				nameSelectionModal.style.display = 'block';
-
-				return new Promise((resolve) => {
-					if (nameParts.length === 1) {
-						nameSelectionModal.style.display = 'none';
-						resolve(nameParts[0]);
-					} else {
-						nameParts.forEach(name => {
-							const button = document.createElement('button');
-							button.textContent = name;
-							button.addEventListener('click', function() {
-								nameSelectionModal.style.display = 'none';
-								resolve(name);
-							});
-							modalButtonsContainer.appendChild(button);
+			
+				const modalButtonsContainer = nameSelectionModal.querySelector('.modal-buttons');
+				modalButtonsContainer.innerHTML = ''; // Clear any existing buttons
+			
+				if (nameParts.length === 1) {
+					userGivenName = nameParts[0];
+					callback(userGivenName);
+					nameSelectionModal.style.display = 'none'; // Hide modal
+				} else {
+					nameParts.forEach(name => {
+						const button = document.createElement('button');
+						button.textContent = name;
+						button.addEventListener('click', function() {
+							userGivenName = setUserGivenName(name);
+							callback(userGivenName); 
+							nameSelectionModal.style.display = 'none'; // Hide modal
 						});
-					}
-				});
+						modalButtonsContainer.appendChild(button); // Append button to modal
+					});
+				}
 			}
 
 			// Helper function to assign userGivenName when the user clicks a button
@@ -634,12 +637,7 @@
 			}
 
 			// Create new cover letter
-			if (coverLetter.name.endsWith('.pdf')) {
-				const arrayBuffer = await coverLetter.arrayBuffer(); // Read PDF content
-				const userGivenName = await askUserForPreferredName(userFirstName, userMiddleName, userLastName);
-				zipDocs.file('Anschreiben_' + userGivenName + ".pdf", arrayBuffer); // Add directly
-			} else {
-			
+			if (!coverLetter.name.endsWith('.pdf')) {	
 				var zip = new PizZip(content);
 				var coverLetterDoc;
 				try {
@@ -696,10 +694,7 @@
 					loadFile(cvURL, async function(cvError, cvContent) {
 						if (cvError) { throw cvError; }
 
-						if (cv.name.endsWith('.pdf')) {
-							const arrayBuffer = await cv.arrayBuffer();
-							zipDocs.file("Lebenslauf_" + userGivenName + ".pdf", arrayBuffer);
-						} else {
+						if (!cv.name.endsWith('.pdf')) {
 							var cvZip = new PizZip(cvContent);
 							var cvDoc;
 							try {
@@ -765,11 +760,17 @@
 								// Perform ATS check
 								performATSCheck();
 							});
+						} else {
+							const arrayBuffer = await cv.arrayBuffer();
+							zipDocs.file("Lebenslauf_" + userGivenName + ".pdf", arrayBuffer);
 						}
 					});
 
 					return coverLetterText;
 				});
+			} else {
+				const arrayBuffer = await coverLetter.arrayBuffer(); // Read PDF content
+				zipDocs.file('Anschreiben_' + userGivenName + ".pdf", arrayBuffer); // Add directly
 			}
 		});
 	}
