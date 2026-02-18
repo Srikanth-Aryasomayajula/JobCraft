@@ -224,19 +224,31 @@ async function extractTextFromDoc(docFile) {
 
 // Helper function to extract text from PDF
 async function extractTextFromPDF(file) {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    return new Promise((resolve, reject) => {
+        const file_reader = new FileReader();
 
-    let fullText = '';
+        file_reader.onload = function (event) {
+            try {
+                const json = AsposePdfExtractText(event.target.result, file.name);
 
-    for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        const strings = content.items.map(item => item.str);
-        fullText += strings.join(' ') + '\n';
-    }
+                if (json.errorCode === 0) {
+                    const fullText = json.extractText;  // store in fullText
+                    resolve(fullText);                  // return fullText
+                } else {
+                    reject(json.errorText);
+                }
 
-    return fullText;
+            } catch (error) {
+                reject(error);
+            }
+        };
+
+        file_reader.onerror = function (error) {
+            reject(error);
+        };
+
+        file_reader.readAsArrayBuffer(file);
+    });
 }
 
 // Function to save files on the client's machine
