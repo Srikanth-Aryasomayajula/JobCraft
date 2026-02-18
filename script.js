@@ -695,10 +695,11 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 
 				// Process CV
 				loadFile(cvURL, async function(cvError, cvContent) {
+					console.log("698");
 					if (cvError) { throw cvError; }
-
+					console.log("700");
 					if (!cv.name.endsWith('.pdf')) {
-						console.log("701");
+						console.log("702");
 						var cvZip = new PizZip(cvContent);
 						var cvDoc;
 						try {
