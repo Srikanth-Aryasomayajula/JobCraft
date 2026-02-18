@@ -637,7 +637,7 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 		}
 
 		// Extract the user's name from the cover letter
-		function extractUserName(coverLetterText){
+		async function extractUserName(coverLetterText){
 			const nameMatch = extractUserNameFromCoverLetter(coverLetterText);
 			if (nameMatch && nameMatch.length > 0) {
 				// Extract first, middle, and last name in a single line
@@ -691,7 +691,7 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 				errorHandler(error);
 			}
 
-			extractUserName(coverLetterText);
+			await extractUserName(coverLetterText);
 			
 			console.log("692");
 			var out = coverLetterDoc.getZip().generate();
