@@ -103,19 +103,22 @@ async function processJobApplication() {
     contactPerson = extractContactPerson(jobDesc);
 	jobTitle = extractJobTitle(jobDesc);
 
-    try {
-        // Process CV and Cover Letter separately
-        const { salutation, lastName, newAddress, newRef_type, newRef_number, newCompanyFirstWord } = await processCoverLetter(coverLetter, companyName, contactPerson, jobTitle, jobDesc);
-		
-		var zipDocs = new PizZip();
-		
-		await generate(coverLetterURL, cvURL, certificatesURL, zipDocs, companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord);
+	// Only process cover letter if DOCX
+    if (!coverLetter.name.endsWith(".pdf")) {
+		try {
+			// Process CV and Cover Letter separately
+			const { salutation, lastName, newAddress, newRef_type, newRef_number, newCompanyFirstWord } = await processCoverLetter(coverLetter, companyName, contactPerson, jobTitle, jobDesc);
+			
+			var zipDocs = new PizZip();
+			
+			await generate(coverLetterURL, cvURL, certificatesURL, zipDocs, companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord);
 
-    } catch (error) {
-        console.error("Error processing job application:", error);
-    }
-
-	return {coverLetterURL, cvURL, certificatesURL, newCompanyFirstWord};
+		} catch (error) {
+			console.error("Error processing job application:", error);
+		}
+	
+		return {coverLetterURL, cvURL, certificatesURL, newCompanyFirstWord};
+	};
 }
 
 // Function to process and modify CV
