@@ -771,8 +771,11 @@
 					return coverLetterText;
 				});
 			} else {
-				const arrayBuffer = await coverLetter.arrayBuffer(); // Read PDF content
-				zipDocs.file('Anschreiben_' + userGivenName + ".pdf", arrayBuffer); // Add directly
+				await askUserForPreferredName(userFirstName, userMiddleName, userLastName, function(selectedName) {
+					userGivenName = selectedName;
+					const arrayBuffer = await coverLetter.arrayBuffer(); // Read PDF content
+					zipDocs.file('Anschreiben_' + userGivenName + ".pdf", arrayBuffer); // Add directly
+				}
 			}
 		});
 	}
