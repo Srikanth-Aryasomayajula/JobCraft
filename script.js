@@ -88,6 +88,8 @@ async function processJobApplication() {
 		return; // Exit if validation fails
     }
 	
+	let newCompanyFirstWord;
+	
     jobDesc = document.getElementById("job-description").value;
     const cv = document.getElementById("cv-upload").files[0];
     const coverLetter = document.getElementById("cover-letter-upload").files[0];
@@ -106,8 +108,9 @@ async function processJobApplication() {
 
 	try {
 		// Process CV and Cover Letter separately
+		console.log("111");
 		const { salutation, lastName, newAddress, newRef_type, newRef_number, newCompanyFirstWord } = await processCoverLetter(coverLetter, companyName, contactPerson, jobTitle, jobDesc);
-		
+		console.log("113");
 		var zipDocs = new PizZip();
 		
 		await generate(coverLetterURL, cvURL, certificatesURL, zipDocs, companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord);
@@ -129,7 +132,7 @@ async function processCV(file, companyName, contactPerson, language) {
     let docText = result.value;
 	
 	if (file.name.endsWith(".pdf")) {
-		console.log("test pdf")
+		console.log("135")
 		docText = await extractTextFromPDF(file);
 	} else {
 		const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
