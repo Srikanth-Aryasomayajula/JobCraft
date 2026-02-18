@@ -622,6 +622,8 @@
 						modalButtonsContainer.appendChild(button); // Append button to modal
 					});
 				}
+				
+				return userGivenName;
 			}
 
 			// Helper function to assign userGivenName when the user clicks a button
@@ -639,7 +641,7 @@
 			// Create new cover letter
 			if (coverLetter.name.endsWith('.pdf')) {
 				const arrayBuffer = await coverLetter.arrayBuffer(); // Read PDF content
-				zipDocs.file('Anschreiben_' + callback(userGivenName) + ".pdf", arrayBuffer); // Add directly
+				zipDocs.file('Anschreiben_' + userGivenName + ".pdf", arrayBuffer); // Add directly
 			} else {
 			
 				var zip = new PizZip(content);
@@ -692,7 +694,7 @@
 					userGivenName = selectedName;
 				
 					var out = coverLetterDoc.getZip().generate();
-					zipDocs.file('Anschreiben_' + callback(userGivenName) + ".docx", out, { base64: true });
+					zipDocs.file('Anschreiben_' + userGivenName + ".docx", out, { base64: true });
 
 					// Process CV
 					loadFile(cvURL, async function(cvError, cvContent) {
