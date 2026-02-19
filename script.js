@@ -575,7 +575,7 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 		// Extract the user's full name from the last line of the cover letter
 		function extractUserNameFromCoverLetter(coverLetterText) {
 			// Define a regular expression to match the search words followed by up to three capitalized words
-			const regex = /(Grüße|Gruß|Grüßen)[\s\r\n]*([A-ZÄÖÜ][a-zäöüß]+)[\s\r\n]*([A-ZÄÖÜ][a-zäöüß]+)?[\s\r\n]*([A-ZÄÖÜ][a-zäöüß]+)?/g;
+			const regex = /(Mit Freundlichen|Grüße|Gruß|Grüßen)[\s\r\n]*([A-ZÄÖÜ][a-zäöüß]+)[\s\r\n]*([A-ZÄÖÜ][a-zäöüß]+)?[\s\r\n]*([A-ZÄÖÜ][a-zäöüß]+)?/g;
 
 			// Find matches in the cover letter text
 			const matches = [];
