@@ -31,259 +31,190 @@ async function initiateProcessing() {
 	let oldAddress;
 	let new_address_first, new_address_second, new_address_third;
 	let coverLetterText = '';  // Declare outside to store cover letter content
-	let cvText = '';  // Declare outside to store CV content
+    let cvText = '';  // Declare outside to store CV content
 	let userFirstName = '';
 	let userMiddleName = '';
 	let userLastName = '';
 	let userGivenName = '';
 	
-	console.log("40");
 	// Perform the necessary changes to the CV, cover letter and other documents and zip them
 	newCompanyFirstWord = (await processJobApplication()).newCompanyFirstWord;
-	console.log("43");
 }
 
 // Validate inputs and highlight empty fields
 function validateInputs() {
-	const jobDesc = document.getElementById("job-description").value;
-	//const savePath = document.getElementById("save-path").value;
-	const cv = document.getElementById("cv-upload").files[0];
-	const coverLetter = document.getElementById("cover-letter-upload").files[0];
-	const certificates = document.getElementById("certificates-upload").files[0];
+    const jobDesc = document.getElementById("job-description").value;
+    //const savePath = document.getElementById("save-path").value;
+    const cv = document.getElementById("cv-upload").files[0];
+    const coverLetter = document.getElementById("cover-letter-upload").files[0];
+    const certificates = document.getElementById("certificates-upload").files[0];
 
-	// Reset highlight classes
-	document.querySelectorAll('.highlight').forEach(element => {
-		element.classList.remove('highlight');
-	});
+    // Reset highlight classes
+    document.querySelectorAll('.highlight').forEach(element => {
+        element.classList.remove('highlight');
+    });
 
-	let isValid = true;
+    let isValid = true;
 
-	if (!jobDesc) {
-		alert("Please fill Job Description");
-		document.getElementById("job-description").classList.add('highlight');
-		isValid = false;
-	}
+    if (!jobDesc) {
+        alert("Please fill Job Description");
+        document.getElementById("job-description").classList.add('highlight');
+        isValid = false;
+    }
 
-	if (!cv) {
-		alert("Please upload your CV");
-		document.getElementById("cv-upload").classList.add('highlight');
-		isValid = false;
-	}
+    if (!cv) {
+        alert("Please upload your CV");
+        document.getElementById("cv-upload").classList.add('highlight');
+        isValid = false;
+    }
 
-	if (!coverLetter) {
-		alert("Please upload your cover letter");
-		document.getElementById("cover-letter-upload").classList.add('highlight');
-		isValid = false;
-	}
+    if (!coverLetter) {
+        alert("Please upload your cover letter");
+        document.getElementById("cover-letter-upload").classList.add('highlight');
+        isValid = false;
+    }
 
-	if (!certificates) {
-		alert("Please upload your certificates");
-		document.getElementById("certificates-upload").classList.add('highlight');
-		isValid = false;
-	}
+    if (!certificates) {
+        alert("Please upload your certificates");
+        document.getElementById("certificates-upload").classList.add('highlight');
+        isValid = false;
+    }
 
-	return isValid;
+    return isValid;
 }
 // Function to process the job application form
 async function processJobApplication() {
-	if (!validateInputs()) {
+    if (!validateInputs()) {
 		return; // Exit if validation fails
-	}
-	console.log("92");
+    }
 	
-	let newCompanyFirstWord;
+    jobDesc = document.getElementById("job-description").value;
+    const cv = document.getElementById("cv-upload").files[0];
+    const coverLetter = document.getElementById("cover-letter-upload").files[0];
+    const certificates = document.getElementById("certificates-upload").files[0];
 	
-	jobDesc = document.getElementById("job-description").value;
-	const cv = document.getElementById("cv-upload").files[0];
-	const coverLetter = document.getElementById("cover-letter-upload").files[0];
-	const certificates = document.getElementById("certificates-upload").files[0];
-	
-	console.log("101")
-	// Create a URL for the uploaded files
-	const coverLetterURL = URL.createObjectURL(coverLetter);
+    // Create a URL for the uploaded files
+    const coverLetterURL = URL.createObjectURL(coverLetter);
 	const cvURL = URL.createObjectURL(cv);
 	const certificatesURL = URL.createObjectURL(certificates);
 
-	// Extract company name and contact person from the job description
-	console.log("104")
-	companyName = extractCompanyName(jobDesc);
-	console.log("106")
-	contactPerson = extractContactPerson(jobDesc);
-	console.log("108")
+    // Extract company name and contact person from the job description
+    companyName = extractCompanyName(jobDesc);
+    contactPerson = extractContactPerson(jobDesc);
 	jobTitle = extractJobTitle(jobDesc);
-	console.log("110")
 
-
-	try {
-		// Process CV and Cover Letter separately
-		console.log("111");
-		const { salutation, lastName, newAddress, newRef_type, newRef_number, newCompanyFirstWord } = await processCoverLetter(coverLetter, companyName, contactPerson, jobTitle, jobDesc);
-		console.log("113");
+    try {
+        // Process CV and Cover Letter separately
+        const { salutation, lastName, newAddress, newRef_type, newRef_number, newCompanyFirstWord } = await processCoverLetter(coverLetter, companyName, contactPerson, jobTitle, jobDesc);
+		
 		var zipDocs = new PizZip();
 		
-		await generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL, zipDocs, companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord);
+		await generate(coverLetterURL, cvURL, certificatesURL, zipDocs, companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord);
 
-	} catch (error) {
-		console.error("Error processing job application:", error);
-	}
+    } catch (error) {
+        console.error("Error processing job application:", error);
+    }
 
 	return {coverLetterURL, cvURL, certificatesURL, newCompanyFirstWord};
-
 }
 
 // Function to process and modify CV
 async function processCV(file, companyName, contactPerson, language) {
-	const arrayBuffer = await file.arrayBuffer();
+    const arrayBuffer = await file.arrayBuffer();
 
-	// Extract text from the CV document
-	// const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-	
-	
-	if (file.name.endsWith(".pdf")) {
-		console.log("135")
-		docText = await extractTextFromPDF(file);
-	} else {
-		const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-		let docText = result.value;
-		//docText = result.value;
-	}
+    // Extract text from the CV document
+    const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+    let docText = result.value;
 }
 
 // Function to process and modify Cover Letter
 async function processCoverLetter(file, companyName, contactPerson, jobTitle, jobDesc) {
-	const arrayBuffer = await file.arrayBuffer();
+    const arrayBuffer = await file.arrayBuffer();
 
-	// Extract text from the Cover Letter document
-	// const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+    // Extract text from the Cover Letter document
+    const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+    let docText = result.value;
 	
+	const oldCompanyName = extractCompanyName(docText);
 	
-	if (file.name.endsWith(".pdf")) {
-		const docText = await extractTextFromPDF(file);
-		const companyName = "Unknown";
-		const salutation = "Unknown";
-		const lastName = "Unknown";
-		const jobTitle = "Unknown";
-		const newAddress = "Unknown";
-		const newRef_type = "Unknown";
-		const newRef_number = "Unknown";
-		const newCompanyFirstWord = "Unknown";
-		return {companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord};
-	} else {
-		const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-		let docText = result.value;
+    // Modify company name
+    docText = docText.replace(oldCompanyName, companyName);
 	
-		const oldCompanyName = extractCompanyName(docText);
+	// Extract the first word of both the old and new company names
+	const oldCompanyFirstWord = oldCompanyName.split(' ')[0]; // First word of the old company
+	newCompanyFirstWord = companyName.split(' ')[0]; // First word of the new company;
+	docText = docText.replace(oldCompanyFirstWord, newCompanyFirstWord);
 	
-		// Modify company name
-		docText = docText.replace(oldCompanyName, companyName);
+	// Determine salutation based on the contact person's title
+    let salutation;
+    if (contactPerson.startsWith('Herr')) {
+        salutation = 'Sehr geehrter';
+    } else if (contactPerson.startsWith('Frau')) {
+        salutation = 'Sehr geehrte';
+    } else if (contactPerson.startsWith('Dr')){
+		salutation = 'Sehr geehrte(r)';
+	} else if (contactPerson.startsWith('Mr')||contactPerson.startsWith('Ms')||contactPerson.startsWith('Mrs')) {
+        salutation = 'Dear';
+	}
+	else {
+        salutation = 'Sehr geehrte'; // Default to "Sehr geehrte" for any other titles
+    }
 	
-		// Extract the first word of both the old and new company names
-		const oldCompanyFirstWord = oldCompanyName.split(' ')[0]; // First word of the old company
-		newCompanyFirstWord = companyName.split(' ')[0]; // First word of the new company;
-		docText = docText.replace(oldCompanyFirstWord, newCompanyFirstWord);
-	
-		// Determine salutation based on the contact person's title
-		let salutation;
-		if (contactPerson.startsWith('Herr')) {
-			salutation = 'Sehr geehrter';
-		} else if (contactPerson.startsWith('Frau')) {
-			salutation = 'Sehr geehrte';
-		} else if (contactPerson.startsWith('Dr')){
-			salutation = 'Sehr geehrte(r)';
-		} else if (contactPerson.startsWith('Mr')||contactPerson.startsWith('Ms')||contactPerson.startsWith('Mrs')) {
-			salutation = 'Dear';
-		}
-		else {
-			salutation = 'Sehr geehrte'; // Default to "Sehr geehrte" for any other titles
-		}
-		
-		// Replace the salutation in the cover letter
-		const lastName = getTitleAndLastName(contactPerson);
-		docText = docText.replace(/(Sehr geehrter|Sehr geehrte|Dear) [^\n]+/, `${salutation} ${lastName},`);
+	// Replace the salutation in the cover letter
+	const lastName = getTitleAndLastName(contactPerson);
+    docText = docText.replace(/(Sehr geehrter|Sehr geehrte|Dear) [^\n]+/, `${salutation} ${lastName},`);
 
-		// Replace the subject
-		const oldJobTitle = (docText.match(/Bewerbung:\s*(.*)/) || [])[1]?.trim();
-		docText = docText.replace(oldJobTitle,jobTitle);
-		
-		// Replace the address
-		oldAddress = extractAddress(docText);
-		newAddress = extractAddress(jobDesc);
-		docText = docText.replace(oldAddress,newAddress);
-		
-		const newRef = extractReferenceNumber(jobDesc).type + ": " + extractReferenceNumber(jobDesc).number;
-		const oldRef = (docText.match(/(Referenznummer|Kennziffer|Reference number|Reference No|Reference No.|Referenz|Reference|):\s*(.*)/) || [])[0]?.trim(); // When modifying the search words here, also modify in function extractReferenceNumber(jobDesc)
+    // Replace the subject
+	const oldJobTitle = (docText.match(/Bewerbung:\s*(.*)/) || [])[1]?.trim();
+	docText = docText.replace(oldJobTitle,jobTitle);
+	
+	// Replace the address
+	oldAddress = extractAddress(docText);
+	newAddress = extractAddress(jobDesc);
+	docText = docText.replace(oldAddress,newAddress);
+	
+	const newRef = extractReferenceNumber(jobDesc).type + ": " + extractReferenceNumber(jobDesc).number;
+	const oldRef = (docText.match(/(Referenznummer|Kennziffer|Reference number|Reference No|Reference No.|Referenz|Reference|):\s*(.*)/) || [])[0]?.trim(); // When modifying the search words here, also modify in function extractReferenceNumber(jobDesc)
 
-		docText = docText.replace(oldRef,newRef);
-		const newRef_type = extractReferenceNumber(jobDesc).type;
-		const newRef_number = extractReferenceNumber(jobDesc).number;
-		
-		docText = docText.replace(findDateInText(docText), getCurrentDate());
+	docText = docText.replace(oldRef,newRef);
+	const newRef_type = extractReferenceNumber(jobDesc).type;
+	const newRef_number = extractReferenceNumber(jobDesc).number;
+	
+	docText = docText.replace(findDateInText(docText), getCurrentDate());
 
-		return {companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord};
-	};
+	return {companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord};
 }
 
 // Helper function to extract text from a Word document
 async function extractTextFromDoc(docFile) {
-	const arrayBuffer = await docFile.arrayBuffer();
-	const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-	return result.value;
-}
-
-// Helper function to extract text from PDF
-async function extractTextFromPDF(file) {
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.onload = async function () {
-			const typedarray = new Uint8Array(reader.result);
-
-			try {
-				// Load the PDF
-				const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
-
-				let fullText = '';
-				// Loop through each page
-				for (let i = 1; i <= pdf.numPages; i++) {
-					const page = await pdf.getPage(i);
-					const textContent = await page.getTextContent();
-					// Concatenate all text items
-					const pageText = textContent.items.map(item => item.str).join(' ');
-					fullText += pageText + '\n';
-				}
-
-				resolve(fullText);
-			} catch (err) {
-				reject(err);
-			}
-		};
-		reader.onerror = reject;
-		reader.readAsArrayBuffer(file);
-	});
+    const arrayBuffer = await docFile.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+    return result.value;
 }
 
 // Function to save files on the client's machine
 function saveFile(blob, filename) {
-	saveAs(blob, filename);
+    saveAs(blob, filename);
 }
 
 // Function to extract company name from job description
 function extractCompanyName(jobDesc) {
-	// Static variable to keep track of the count of function calls 
-	if (typeof extractCompanyName.callCount === 'undefined') {
-		extractCompanyName.callCount = 0; // Initialize if undefined
-	}
-	extractCompanyName.callCount++; // Increment the call count	
+    // Static variable to keep track of the count of function calls 
+    if (typeof extractCompanyName.callCount === 'undefined') {
+        extractCompanyName.callCount = 0; // Initialize if undefined
+    }
+    extractCompanyName.callCount++; // Increment the call count	
 	
-	// Regex looks for capitalized words followed by GmbH or AG
+    // Regex looks for capitalized words followed by GmbH or AG
 	const companyNameRegex = /((?:[A-ZÄÖÜ][a-zäöüß]*|[A-ZÄÖÜ]+)(?:\s(?:[A-ZÄÖÜ][a-zäöüß]*|[A-ZÄÖÜ]+))*)\s+(GmbH & Co\. KG|GmbH|AG)/;
 
-	const match = jobDesc.match(companyNameRegex);
+    const match = jobDesc.match(companyNameRegex);
 	
 	// Define Div for getting the company details in the results page
 	const companyResultsDiv = document.getElementById('companyResults');
 
-	if (match && extractCompanyName.callCount == '1') {
-		const fullCompanyName = `${match[1]} ${match[2]}`.trim(); // Get the entire matched string (company name)
+    if (match && extractCompanyName.callCount == '1') {
+        const fullCompanyName = `${match[1]} ${match[2]}`.trim(); // Get the entire matched string (company name)
 		
 		if (typeof companyName !== 'undefined' && companyName !== 'Undefined GmbH'){
 			//companyResultsDiv.innerHTML = `<p>${companyName}</p>`;
@@ -294,16 +225,16 @@ function extractCompanyName(jobDesc) {
 		// Update the global companyName variable
 		companyName = fullCompanyName;
 		companyResultsDiv.innerHTML = `<p>${companyName}</p>`;
-		return fullCompanyName; // Return the full matched string
-	} else if (!match && extractCompanyName.callCount == '2'){
+        return fullCompanyName; // Return the full matched string
+    } else if (!match && extractCompanyName.callCount == '2'){
 		const fullCompanyName = "Undefined GmbH";
-		return fullCompanyName;
-	} else {
+        return fullCompanyName;
+    } else {
 		const fullCompanyName = "Undefined GmbH";
 		const message = "Company name not found in the job description.";
 		companyResultsDiv.innerHTML = `<p>${message}</p>`;		
-		return fullCompanyName;
-	}
+        return fullCompanyName;
+    }
 }
 
 // Function to extract contact person's name from job description
@@ -342,63 +273,63 @@ function extractContactPerson(jobDesc) {
 
 	// Define Div for getting the company details in the results page
 	const contactPersonResultsDiv = document.getElementById('contactPersonResults');
-		
+        
 	if (fullContactPerson !== 'undefined'){
 			contactPersonResultsDiv.innerHTML = `<p>${fullContactPerson}</p>`;
-	} else {
-		const message = "Contact person not found in the job description.";
+    } else {
+        const message = "Contact person not found in the job description.";
 		contactPersonResultsDiv.innerHTML = `<p>${message}</p>`;
 		const fullContactPerson = "Damen und und Herren";
-	}
+    }
 	return fullContactPerson;
 }
 
 // Get title and last name of the contact person
 function getTitleAndLastName(contactPerson) {
-	// Split the contact person string by spaces
-	const nameParts = contactPerson.split(' ');
+    // Split the contact person string by spaces
+    const nameParts = contactPerson.split(' ');
 	
 	let lastName;
 	
-	// Return the title (first part) and last name (last part)
-	const title = nameParts[0]; // Assuming the first part is always the title
+    // Return the title (first part) and last name (last part)
+    const title = nameParts[0]; // Assuming the first part is always the title
 	if (title === 'Damen'){
 		lastName = 'und Herren';
 	} else {
 		lastName = nameParts[nameParts.length - 1];
 	}
-	return `${title} ${lastName}`;
+    return `${title} ${lastName}`;
 }
 
 // Function to extract the job title from the job description
 function extractJobTitle(jobDesc) {
-	// Regex to match job titles that include variations of "(m/w/d/x/f)" in any order, "(all genders)", or "(any gender)"
+    // Regex to match job titles that include variations of "(m/w/d/x/f)" in any order, "(all genders)", or "(any gender)"
 	const jobTitleRegex = /^(.*?\(.*?(?:[mfxwd](?:\/[mfxwd]){1,4}|all genders|any gender).*?\).*)$/gm;
 
-	const match = jobDesc.match(jobTitleRegex);
-	const jobTitle = match ? match[0].trim() : "Undefined";
+    const match = jobDesc.match(jobTitleRegex);
+    const jobTitle = match ? match[0].trim() : "Undefined";
 	
 	// Get the divs where we want to display the results
-	const jobTitleResultsDiv = document.getElementById('jobTitleResults');
+    const jobTitleResultsDiv = document.getElementById('jobTitleResults');
 	
-	if (jobTitle === "Undefined") {
+    if (jobTitle === "Undefined") {
 		const message = "Job title not found in the job description.";
 		jobTitleResultsDiv.innerHTML = `<p>${message}</p>`;
-	} else {
+    } else {
 		jobTitleResultsDiv.innerHTML = `<p>${jobTitle}</p>`;
 	}
-	return jobTitle;
+    return jobTitle;
 }
 
 // Function to extract address from a given text
 function extractAddress(text) {
-	// Static variable to keep track of the count of function calls 
-	if (typeof extractAddress.callCount === 'undefined') {
-		extractAddress.callCount = 0; // Initialize if undefined
-	}
-	extractAddress.callCount++; // Increment the call count
+    // Static variable to keep track of the count of function calls 
+    if (typeof extractAddress.callCount === 'undefined') {
+        extractAddress.callCount = 0; // Initialize if undefined
+    }
+    extractAddress.callCount++; // Increment the call count
 
-	// Regex to capture address: (Single word) Street name, number, ZIP code, city, country
+    // Regex to capture address: (Single word) Street name, number, ZIP code, city, country
 	const countryNames = ['India', 'Deutschland', 'Germany', 'United States', 'Netherlands', 'Switzerland', 'Sweden'];
 	const countryPattern = countryNames.map(name => name.replace(/\s+/g, '\\s+')).join('|');
 	const addressRegex = new RegExp(
@@ -408,21 +339,21 @@ function extractAddress(text) {
 									`(?:${countryPattern})?`
 									);
 
-	// Extract the address using the regex
-	const addressMatch = text.match(addressRegex);
+    // Extract the address using the regex
+    const addressMatch = text.match(addressRegex);
 
 	// Get the divs where we want to display the results
-	const addressResultsDiv = document.getElementById('addressResults');
+    const addressResultsDiv = document.getElementById('addressResults');
 	
 	let message = "";
 	
-	if (addressMatch) {
-		const addressLines = addressMatch[0].trim().split(/,\s*|\n/).map(line => line.trim());
+    if (addressMatch) {
+        const addressLines = addressMatch[0].trim().split(/,\s*|\n/).map(line => line.trim());
 		
-		if (addressLines[2] === '' || addressLines.length < 3 || /^[a-z]/.test(addressLines[2])) {
+        if (addressLines[2] === '' || addressLines.length < 3 || /^[a-z]/.test(addressLines[2])) {
 			message = "The third line of the address (country) is missing.<br>";
-			addressLines[2] = "undefined";
-		}
+            addressLines[2] = "undefined";
+        }
 		
 		// Assuming addressLines is already defined and contains the relevant lines
 		for (let i = 0; i < 3; i++) {
@@ -443,139 +374,139 @@ function extractAddress(text) {
 		
 		addressMatch[0] = addressLines[0] + '\n' + addressLines[1] + '\n' + addressLines[2];
 
-		return addressMatch[0].trim(); // Return the extracted address
-	} else {
+        return addressMatch[0].trim(); // Return the extracted address
+    } else {
 		const addressLines = 'undefined\nundefined\nundefined';
 		const message = "Address not found in the job description.";
 		addressResultsDiv.innerHTML = `<p>${message}</p>`;
-		return addressLines; // Return null if not found
-	}
+        return addressLines; // Return null if not found
+    }
 }
 
 // Function to extract Kennziffer or Referenznummer from job description
 function extractReferenceNumber(jobDesc) {
 	
 	// Static variable to keep track of the count of function calls
-	if (typeof extractReferenceNumber.callCount === 'undefined') {
-		extractReferenceNumber.callCount = 0; // Initialize if undefined
-	}
-	extractReferenceNumber.callCount++; // Increment the call count
-	
+    if (typeof extractReferenceNumber.callCount === 'undefined') {
+        extractReferenceNumber.callCount = 0; // Initialize if undefined
+    }
+    extractReferenceNumber.callCount++; // Increment the call count
+    
 	// Regex to capture Kennziffer or Referenznummer followed by an alphanumeric code
-	const referenceRegex = /(Kennziffer|Referenznummer|JobID|Job ID|Job-ID|Job_ID|Job Nr|Job Nr.|Job Number|Job No.|Job No|Stellen ID|StellenID|Stellen Nr|Stellen Nr.|Reference number|Reference No|Reference No.|Referenz|Reference|Job:|Stellen:|ID}})[:\s]+([A-Za-z0-9/-]+)/i;
+    const referenceRegex = /(Kennziffer|Referenznummer|JobID|Job ID|Job-ID|Job_ID|Job Nr|Job Nr.|Job Number|Job No.|Job No|Stellen ID|StellenID|Stellen Nr|Stellen Nr.|Reference number|Reference No|Reference No.|Referenz|Reference|Job:|Stellen:|ID}})[:\s]+([A-Za-z0-9/-]+)/i;
 
-	// Match the reference number in the job description
-	const match = jobDesc.match(referenceRegex);
+    // Match the reference number in the job description
+    const match = jobDesc.match(referenceRegex);
 	
 	// Get the divs where we want to display the results
-	const referenceResultsDiv = document.getElementById('referenceResults');
+    const referenceResultsDiv = document.getElementById('referenceResults');
 
-	// If found, return an object with both the type and the number, otherwise return null
-	if (match) {
+    // If found, return an object with both the type and the number, otherwise return null
+    if (match) {
 		const type = match[1].trim(); // "Kennziffer" or "Referenznummer"
-		const number = match[2].trim(); // The actual reference number
-		const message = `<strong>${type}:</strong> ${number}`;
-		referenceResultsDiv.innerHTML = `<p>${message}</p>`; // Display result
+        const number = match[2].trim(); // The actual reference number
+        const message = `<strong>${type}:</strong> ${number}`;
+        referenceResultsDiv.innerHTML = `<p>${message}</p>`; // Display result
 
-		return {
-			type: type,
-			number: number,
-			count: extractReferenceNumber.callCount // Return the call count
-		};
-	} else {
+        return {
+            type: type,
+            number: number,
+            count: extractReferenceNumber.callCount // Return the call count
+        };
+    } else {
 		if (extractReferenceNumber.callCount === 1){
 			const message = "Reference number not found in the job description. The relevant line in the cover letter is deleted.";
 			referenceResultsDiv.innerHTML = `<p>${message}</p>`;
 		}
-		return {
-			type: "", // Empty string for type
-			number: "", // Empty string for number
+        return {
+            type: "", // Empty string for type
+            number: "", // Empty string for number
 			count: extractReferenceNumber.callCount // Return the call count
-		};
+        };
 	}
 }
 
 // Function to find the first date in the text
 function findDateInText(docText) {
-	// Regular expression to match dates in the format DD.MM.YYYY
-	const dateRegex = /\b(\d{2})\.(\d{2})\.(\d{4})\b/;
-	
-	// Find the first match of the date in the document text
-	const match = docText.match(dateRegex);
-	
-	// Return the matched date or null if no date is found
-	return match ? match[0] : null;
+    // Regular expression to match dates in the format DD.MM.YYYY
+    const dateRegex = /\b(\d{2})\.(\d{2})\.(\d{4})\b/;
+    
+    // Find the first match of the date in the document text
+    const match = docText.match(dateRegex);
+    
+    // Return the matched date or null if no date is found
+    return match ? match[0] : null;
 }
 
 // Function to load the file and convert it to a URL
 function loadFile(url,callback){
-	PizZipUtils.getBinaryContent(url,callback);
+    PizZipUtils.getBinaryContent(url,callback);
 }
 
 // Function to highlight and display undefined occurrences
 function highlightUndefinedInDocuments(cvText, coverLetterText) {
-	// Function to highlight "undefined" in a given text
-	function highlightUndefined(text) {
-		let highlightedText = '';
-		const sentences = text.split(/(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s/); // Split by sentences
-		sentences.forEach(sentence => {
-			if (sentence.toLowerCase().includes("undefined")) {
-				// Highlight the word "undefined" in the sentence
-				const highlightedSentence = sentence.replace(/undefined/gi, '<span style="color: red;"><strong>undefined</strong></span>');
+    // Function to highlight "undefined" in a given text
+    function highlightUndefined(text) {
+        let highlightedText = '';
+        const sentences = text.split(/(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s/); // Split by sentences
+        sentences.forEach(sentence => {
+            if (sentence.toLowerCase().includes("undefined")) {
+                // Highlight the word "undefined" in the sentence
+                const highlightedSentence = sentence.replace(/undefined/gi, '<span style="color: red;"><strong>undefined</strong></span>');
 				highlightedText += `<p>${highlightedSentence}</p>`;
-			}
-		});
-		return highlightedText || '<p>No instances of "undefined" were found in your document.</p>'; // If no undefined found, return this
-	}
+            }
+        });
+        return highlightedText || '<p>No instances of "undefined" were found in your document.</p>'; // If no undefined found, return this
+    }
 
-	// Get the divs where we want to display the results
-	const cvResultsDiv = document.getElementById('cvResults');
-	const coverLetterResultsDiv = document.getElementById('coverLetterResults');
+    // Get the divs where we want to display the results
+    const cvResultsDiv = document.getElementById('cvResults');
+    const coverLetterResultsDiv = document.getElementById('coverLetterResults');
 
-	// Generate the highlighted text for both CV and Cover Letter
-	const cvResults = highlightUndefined(cvText);
-	const coverLetterResults = highlightUndefined(coverLetterText);
+    // Generate the highlighted text for both CV and Cover Letter
+    const cvResults = highlightUndefined(cvText);
+    const coverLetterResults = highlightUndefined(coverLetterText);
 
-	// Display the results in the respective divs
-	cvResultsDiv.innerHTML = `<h3>CV Results</h3>${cvResults}`;
-	coverLetterResultsDiv.innerHTML = `<h3>Cover Letter Results</h3>${coverLetterResults}`;
+    // Display the results in the respective divs
+    cvResultsDiv.innerHTML = `<h3>CV Results</h3>${cvResults}`;
+    coverLetterResultsDiv.innerHTML = `<h3>Cover Letter Results</h3>${coverLetterResults}`;
 
-	// Show the results section
-	document.getElementById('highlightedResults').style.display = 'block';  // Ensuring the second screen is visible
+    // Show the results section
+    document.getElementById('highlightedResults').style.display = 'block';  // Ensuring the second screen is visible
 }
 
 // Function to generate zip file from the given files
-async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL, zipDocs, companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord) {
+async function generate(coverLetterURL, cvURL, certificatesURL, zipDocs, companyName, salutation, lastName, jobTitle, newAddress, newRef_type, newRef_number, newCompanyFirstWord) {
 	
-	// Process Cover Letter
-	loadFile(coverLetterURL, async function(error, content) {
-		if (error) { throw error; }
+    // Process Cover Letter
+    loadFile(coverLetterURL, function(error, content) {
+        if (error) { throw error; }
 
-		function replaceErrors(key, value) {
-			if (value instanceof Error) {
-				return Object.getOwnPropertyNames(value).reduce(function(error, key) {
-					error[key] = value[key];
-					return error;
-				}, {});
-			}
-			return value;
-		}
+        function replaceErrors(key, value) {
+            if (value instanceof Error) {
+                return Object.getOwnPropertyNames(value).reduce(function(error, key) {
+                    error[key] = value[key];
+                    return error;
+                }, {});
+            }
+            return value;
+        }
 
-		function errorHandler(error) {
-			console.log(JSON.stringify({ error: error }, replaceErrors));
-			if (error.properties && error.properties.errors instanceof Array) {
-				const errorMessages = error.properties.errors.map(function (error) {
-					return error.properties.explanation;
-				}).join("\n");
-				console.log('errorMessages', errorMessages);
-			}
-			throw error;
-		}
+        function errorHandler(error) {
+            console.log(JSON.stringify({ error: error }, replaceErrors));
+            if (error.properties && error.properties.errors instanceof Array) {
+                const errorMessages = error.properties.errors.map(function (error) {
+                    return error.properties.explanation;
+                }).join("\n");
+                console.log('errorMessages', errorMessages);
+            }
+            throw error;
+        }
 		
 		// Extract the user's full name from the last line of the cover letter
 		function extractUserNameFromCoverLetter(coverLetterText) {
 			// Define a regular expression to match the search words followed by up to three capitalized words
-			const regex = /(Grüße|Gruß|Grüßen|Gr ü ß en)[\s\r\n]*([A-ZÄÖÜ][a-zäöüß]+)[\s\r\n]*([A-ZÄÖÜ][a-zäöüß]+)?[\s\r\n]*([A-ZÄÖÜ][a-zäöüß]+)?/g;
+			const regex = /(Grüße|Gruß|Grüßen)[\s\r\n]*([A-ZÄÖÜ][a-zäöüß]+)[\s\r\n]*([A-ZÄÖÜ][a-zäöüß]+)?[\s\r\n]*([A-ZÄÖÜ][a-zäöüß]+)?/g;
 
 			// Find matches in the cover letter text
 			const matches = [];
@@ -595,34 +526,34 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 		}
 
 		// Function to display the alert with buttons based on the extracted name
-		function askUserForPreferredName(firstName, middleName, lastName) {
-			const nameParts = [firstName, middleName, lastName].filter(Boolean);
-
+		function askUserForPreferredName(firstName, middleName, lastName, callback) {
+			const nameParts = [firstName, middleName, lastName].filter(Boolean); // Only include non-empty values
+		
 			const nameSelectionModal = document.getElementById('nameSelectionModal');
-			const modalButtonsContainer = nameSelectionModal.querySelector('.modal-buttons');
-			modalButtonsContainer.innerHTML = '';
+			
+			// Show the name selection modal
 			nameSelectionModal.style.display = 'block';
-
-			return new Promise((resolve) => {
-				if (nameParts.length === 1) {
-					userGivenName = nameParts[0];
-					nameSelectionModal.style.display = 'none';
-					resolve(userGivenName);
-				} else {
-					nameParts.forEach(name => {
-						const button = document.createElement('button');
-						button.textContent = name;
-						button.addEventListener('click', () => {
-							userGivenName = name; // set global
-							nameSelectionModal.style.display = 'none';
-							resolve(userGivenName);
-						});
-						modalButtonsContainer.appendChild(button);
+		
+			const modalButtonsContainer = nameSelectionModal.querySelector('.modal-buttons');
+			modalButtonsContainer.innerHTML = ''; // Clear any existing buttons
+		
+			if (nameParts.length === 1) {
+				userGivenName = nameParts[0];
+				callback(userGivenName);
+				nameSelectionModal.style.display = 'none'; // Hide modal
+			} else {
+				nameParts.forEach(name => {
+					const button = document.createElement('button');
+					button.textContent = name;
+					button.addEventListener('click', function() {
+						userGivenName = setUserGivenName(name);
+						callback(userGivenName); 
+						nameSelectionModal.style.display = 'none'; // Hide modal
 					});
-				}
-			});
+					modalButtonsContainer.appendChild(button); // Append button to modal
+				});
+			}
 		}
-
 
 		// Helper function to assign userGivenName when the user clicks a button
 		function setUserGivenName(selectedName) {
@@ -636,232 +567,162 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 			return userGivenName;
 		}
 
-		// Extract the user's name from the cover letter
-		async function extractUserName(coverLetterText) {
-			return new Promise(async (resolve) => {
-				console.log(coverLetterText);
-				const nameMatch = extractUserNameFromCoverLetter(coverLetterText);
-				console.log(nameMatch);
-
-				if (nameMatch && nameMatch.length > 0) {
-					[userFirstName = '', userMiddleName = '', userLastName = ''] =
-						nameMatch[0].slice(1);
-				} else {
-					const typedName = prompt(
-						"Your name could not be extracted from your cover letter. Please enter your full name so that I could add it to your documents."
-					);
-
-					if (typedName) {
-						const parts = typedName.trim().split(" ");
-						userFirstName = parts[0] || '';
-						userMiddleName = parts.length === 3 ? parts[1] : '';
-						userLastName = parts.length > 1 ? parts[parts.length - 1] : '';
-					} else {
-						userFirstName = "Unnamed";
-						userMiddleName = '';
-						userLastName = '';
-					}
-				}
-
-				try {
-					userGivenName = await askUserForPreferredName(
-						userFirstName,
-						userMiddleName,
-						userLastName
-					);
-
-					console.log("Selected userGivenName:", userGivenName);
-
-					resolve(userGivenName);
-
-				} catch (error) {
-					console.error("Error selecting preferred name:", error);
-					resolve("Unnamed");
-				}
-			});
-			
-			return userGivenName;
-			
+		// Create new cover letter
+        var zip = new PizZip(content);
+        var coverLetterDoc;
+        try {
+            coverLetterDoc = new window.docxtemplater(zip);
+        } catch (error) {
+             errorHandler(error);
 		}
 
+        coverLetterDoc.setData({
+			// the format is "wordDocumentVariable : javascriptVariable". wordDocumentVariable is defined here only
+            last_name: lastName,
+            company_name: companyName,
+            new_Company_First_Word: newCompanyFirstWord,
+            salu_tation: salutation,
+            job_title: jobTitle,
+			new_address_first: newAddress.split('\n')[0],
+			new_address_second: newAddress.split('\n')[1],
+			new_address_third: newAddress.split('\n')[2],
+			new_ref_type: newRef_type,
+            new_ref_number: newRef_number,
+            date: getCurrentDate()
+        });
 
-		// Create new cover letter
-		if (!coverLetter.name.endsWith('.pdf')) {	
-			console.log("641");
-			var zip = new PizZip(content);
-			var coverLetterDoc;
-			try {
-				coverLetterDoc = new window.docxtemplater(zip);
-			} catch (error) {
-				 errorHandler(error);
-			}
-
-			coverLetterDoc.setData({
-				// the format is "wordDocumentVariable : javascriptVariable". wordDocumentVariable is defined here only
-				last_name: lastName,
-				company_name: companyName,
-				new_Company_First_Word: newCompanyFirstWord,
-				salu_tation: salutation,
-				job_title: jobTitle,
-				new_address_first: newAddress.split('\n')[0],
-				new_address_second: newAddress.split('\n')[1],
-				new_address_third: newAddress.split('\n')[2],
-				new_ref_type: newRef_type,
-				new_ref_number: newRef_number,
-				date: getCurrentDate()
-			});
-
-			try {
-				coverLetterDoc.render();
-					
-				// Extract the complete cover letter content as text
-				coverLetterText = coverLetterDoc.getFullText();	
+        try {
+            coverLetterDoc.render();
 				
-			} catch (error) {
-				errorHandler(error);
-			}
-
-			await extractUserName(coverLetterText);
+			// Extract the complete cover letter content as text
+			coverLetterText = coverLetterDoc.getFullText();	
 			
-			console.log("692");
+        } catch (error) {
+            errorHandler(error);
+        }
+
+		// Extract the user's name from the cover letter
+		const nameMatch = extractUserNameFromCoverLetter(coverLetterText);
+		if (nameMatch && nameMatch.length > 0) {
+            // Extract first, middle, and last name in a single line
+            [userFirstName = '', userMiddleName = '', userLastName = ''] = nameMatch[0].slice(1); 
+        } else {
+			// If no name was extracted, prompt the user to type their name
+			const typedName = prompt("Your name could not be extracted from your cover letter. Please enter your full name so that I could add it to your documents.");
+			userFirstName = typedName || "Unnamed"; // Assign the typed name or "Unnamed" if they leave it empty
+			userMiddleName = '';
+			userLastName = '';
+		}
+
+		askUserForPreferredName(userFirstName, userMiddleName, userLastName, function(selectedName) {
+			userGivenName = selectedName;
+		
 			var out = coverLetterDoc.getZip().generate();
 			zipDocs.file('Anschreiben_' + userGivenName + ".docx", out, { base64: true });
-			console.log("695");
+
 			// Process CV
-			loadFile(cvURL, async function(cvError, cvContent) {
-				console.log("698");
+			loadFile(cvURL, function(cvError, cvContent) {
 				if (cvError) { throw cvError; }
-				console.log("700");
-				if (!cv.name.endsWith('.pdf')) {
-					console.log("702");
-					var cvZip = new PizZip(cvContent);
-					var cvDoc;
-					try {
-						cvDoc = new window.docxtemplater(cvZip);
-					} catch (error) {
-						errorHandler(error);
-					}
 
-					cvDoc.setData({
-						date: getCurrentDate() // Add any additional placeholders for the CV here
-					});
+				var cvZip = new PizZip(cvContent);
+				var cvDoc;
+				try {
+					cvDoc = new window.docxtemplater(cvZip);
+				} catch (error) {
+					errorHandler(error);
+				}
 
-					try {
-						cvDoc.render();
+				cvDoc.setData({
+					date: getCurrentDate() // Add any additional placeholders for the CV here
+				});
+
+				try {
+					cvDoc.render();
+				
+					// Extract the complete CV content as text
+					cvText = cvDoc.getFullText();
+
+				} catch (error) {
+					errorHandler(error);
+				}
+
+				var cvOut = cvDoc.getZip().generate();
+				zipDocs.file("Lebenslauf_" + userGivenName + ".docx", cvOut, { base64: true });
+
+				// Process Certificates
+				loadFile(certificatesURL, function(certError, certContent) {
+					if (certError) { throw certError; }
+                
+					// Add certificates file to the zip (assuming no placeholders in certificates)
+					zipDocs.file("Weiteren-Unterlagen_" + userGivenName + ".pdf", certContent, { base64: true });
+
+					// Generate the ZIP file with cover letter, CV, and certificates
+					var content = zipDocs.generate({ type: "blob" });
+					saveAs(content, "Application_Documents.zip");
+				
+					// Delete the count keepers in the functions
+					delete extractAddress.callCount;
+					delete extractReferenceNumber.callCount;
+				
+					// Find the word 'undefined' in CV and cover letter
+					highlightUndefinedInDocuments(cvText, coverLetterText);
 					
-						// Extract the complete CV content as text
-						cvText = cvDoc.getFullText();
+					// Return folder name (optional)
+					// Show folder name confirmation modal
+					document.getElementById('folderNameModal').style.display = 'block';
+	
+					// Button handlers for folder name modal
+					document.getElementById('yesFolderButton').onclick = function() {
+						folderNameLocation(); // Call folder name location function
+						document.getElementById('folderNameHeading').style.display = 'block'; // Show the heading
+						document.getElementById('folderNameContainer').style.display = 'block'; // Show the folder name container
+						document.getElementById('folderNameModal').style.display = 'none'; // Hide the modal
+					};
+	
+					document.getElementById('noFolderButton').onclick = function() {
+						document.getElementById('folderNameHeading').style.display = 'none'; // Hide the heading
+						document.getElementById('folderNameContainer').style.display = 'none'; // Hide the folder name container
+						document.getElementById('folderNameModal').style.display = 'none'; // Hide the modal
+						document.getElementById('folderNameLocation').innerHTML = ''; // Clear any existing folder name content
+					};
 
-					} catch (error) {
-						errorHandler(error);
-					}
-
-					var cvOut = cvDoc.getZip().generate();
-					zipDocs.file("Lebenslauf_" + userGivenName + ".docx", cvOut, { base64: true });
-
-					// Process Certificates
-					loadFile(certificatesURL, async function(certError, certContent) {
-						if (certError) { throw certError; }
-					
-						// Add certificates file to the zip (assuming no placeholders in certificates)
-						zipDocs.file("Weiteren-Unterlagen_" + userGivenName + ".pdf", certContent, { base64: true });
-							
-						console.log("734");
-						
-						// Generate the ZIP file with cover letter, CV, and certificates
-						var content = zipDocs.generate({ type: "blob" });
-						saveAs(content, "Application_Documents.zip");
-					
-						// Delete the count keepers in the functions
-						delete extractAddress.callCount;
-						delete extractReferenceNumber.callCount;
-					
-						// Find the word 'undefined' in CV and cover letter
-						highlightUndefinedInDocuments(cvText, coverLetterText);
-						
-						// Return folder name (optional)
-						// Show folder name confirmation modal
-						document.getElementById('folderNameModal').style.display = 'block';
-		
-						// Button handlers for folder name modal
-						document.getElementById('yesFolderButton').onclick = function() {
-							folderNameLocation(); // Call folder name location function
-							document.getElementById('folderNameHeading').style.display = 'block'; // Show the heading
-							document.getElementById('folderNameContainer').style.display = 'block'; // Show the folder name container
-							document.getElementById('folderNameModal').style.display = 'none'; // Hide the modal
-						};
-		
-						document.getElementById('noFolderButton').onclick = function() {
-							document.getElementById('folderNameHeading').style.display = 'none'; // Hide the heading
-							document.getElementById('folderNameContainer').style.display = 'none'; // Hide the folder name container
-							document.getElementById('folderNameModal').style.display = 'none'; // Hide the modal
-							document.getElementById('folderNameLocation').innerHTML = ''; // Clear any existing folder name content
-						};
-
-						// Perform ATS check
-						performATSCheck();
-					});
-				} 
+					// Perform ATS check
+					performATSCheck();
+				});
 			});
 
 			return coverLetterText;
-		} else {
-			
-			const arrayBuffer = await coverLetter.arrayBuffer(); // Read PDF content
-			zipDocs.file('Anschreiben' + ".pdf", arrayBuffer); // Add directly
-			
-			coverLetterText = await extractTextFromPDF(coverLetter);
-
-			console.log(coverLetterText);
-			userGivenName = await extractUserName(coverLetterText);
-			console.log(userGivenName);
-			
-			
-			if (cv.name.endsWith('.pdf')){
-				const arrayBuffer = await cv.arrayBuffer();
-				zipDocs.file("Lebenslauf" + userGivenName + ".pdf", arrayBuffer);
-				console.log("766");
-				cvText = await extractTextFromPDF(cv);
-				console.log(cvText);
-				// console.log(userGivenName);
-				var out = coverLetterDoc.getZip().generate();
-				zipDocs.file('Anschreiben_' + userGivenName + ".docx", out, { base64: true });
-				console.log("829");
-				
-			} else {
-				// goto loadFile(cvURL, async function(cvError, cvContent)
-			}
-		}
+		});
 	});
 }
 
 // Function to close the modal
 function closeModal() {
-	document.getElementById('atsModal').style.display = 'none';
+    document.getElementById('atsModal').style.display = 'none';
 }
 
 // Function to request ATS check
 function requestATSCheck() {
-	// Display the custom modal
-	document.getElementById('atsModal').style.display = 'block';
+    // Display the custom modal
+    document.getElementById('atsModal').style.display = 'block';
 	
-	// Handle the Yes button click
-	document.getElementById('yesButton').onclick = function() {
-		// Call function to perform ATS check
-		performATSCheck();
-		closeModal(); // Close the modal after the action
-	};
+    // Handle the Yes button click
+    document.getElementById('yesButton').onclick = function() {
+        // Call function to perform ATS check
+        performATSCheck();
+        closeModal(); // Close the modal after the action
+    };
 
-	// Handle the No button click
-	document.getElementById('noButton').onclick = function() {
+    // Handle the No button click
+    document.getElementById('noButton').onclick = function() {
 		// Get the div where we want to display the results
 		const atsRequestResultsDiv = document.getElementById('atsRequestResults');
 	
-		// Print the message on the screen
-		const message = "ATS check has not been requested.";
-		atsRequestResultsDiv.innerHTML = `<p>${message}</p>`;
-		closeModal(); // Close the modal
-	};
+        // Print the message on the screen
+        const message = "ATS check has not been requested.";
+        atsRequestResultsDiv.innerHTML = `<p>${message}</p>`;
+        closeModal(); // Close the modal
+    };
 }
 
 // Store your OpenAI API key in a variable
@@ -869,44 +730,44 @@ const OPENAI_API_KEY = 'sk-proj-0C1vyRo1C2r...PBu0flFmgbIC4A'; // Key hidden on 
 
 // Function to perform ATS check
 async function performATSCheck() {
-	// Prepare the request for GPT-4
-	const prompt = `Evaluate my job application (job description, CV, and cover letter) for ATS (Applicant Tracking System) compatibility and provide the following without searching the web.\nATS Compatibility Score: Evaluate the job description, my CV, and my cover letter for ATS compatibility and give a detailed report with respect to educational background, technical skills, Work experience, language requirements, soft skills, cover letter alignment, etc.(with individual scores and suggestions) and give an estimated overall ATS score in percentage. Also, please provide suggestions for improvement.\nOrder of Skills: Check the order of my technical and non-technical skills (mentioned in my CV, along with the skills that are mentioned in each category of technical and non-technical skills) and suggest me a rearranged order of those skills based on the job description. If the current order looks good, simply say that the order need not be changed and do not give any further orders in this section.\nKeyword Extraction: Extract keywords from the job description (original language and their English translation in brackets if the original language is not English). Also, tell me if the given keyword is available in the CV(maybe like "available in CV" or "missing in CV"). Also, specifically mention all the soft skills that are mentioned in the job description and tell me which one can I replace in my CV because I have space for 4 soft skills only. I wish to include all the soft skills that are mentioned in the job description.\nCover Letter Modification:\n-Modify the provided cover letter to better match the job description while keeping my existing skills intact (please do not give the output text in the canvas like some code, rather give it as normal text). The modified cover letter should tell them how they can be benefited if I am hired. Also, make sure this text does not look like it is generated by ChatGPT.\n-Make sure when you mention my skills in my cover letter, also mention that my skills are transferable to any type of automotive (gas, diesel, electric or even Hydrogen) because my focus is on structural analysis.\n-Mention that I am already improving my German further and I am willing to learn new tools for the position if there are any tools that I do not possess in my CV.\n-Also mention that I am willing to relocate and I am flexible with the salary and would like to start as soon as possible.\n-Include a translation of the modified cover letter into English (if the original language is not English).\n-Provide a summary of the changes you made.\nInputs:\nJob Description:\n${jobDesc}\nCV:\n${cvText}\nCover Letter:\n${coverLetterText}.`;
+    // Prepare the request for GPT-4
+    const prompt = `Evaluate my job application (job description, CV, and cover letter) for ATS (Applicant Tracking System) compatibility and provide the following without searching the web.\nATS Compatibility Score: Evaluate the job description, my CV, and my cover letter for ATS compatibility and give a detailed report with respect to educational background, technical skills, Work experience, language requirements, soft skills, cover letter alignment, etc.(with individual scores and suggestions) and give an estimated overall ATS score in percentage. Also, please provide suggestions for improvement.\nOrder of Skills: Check the order of my technical and non-technical skills (mentioned in my CV, along with the skills that are mentioned in each category of technical and non-technical skills) and suggest me a rearranged order of those skills based on the job description. If the current order looks good, simply say that the order need not be changed and do not give any further orders in this section.\nKeyword Extraction: Extract keywords from the job description (original language and their English translation in brackets if the original language is not English). Also, tell me if the given keyword is available in the CV(maybe like "available in CV" or "missing in CV"). Also, specifically mention all the soft skills that are mentioned in the job description and tell me which one can I replace in my CV because I have space for 4 soft skills only. I wish to include all the soft skills that are mentioned in the job description.\nCover Letter Modification:\n-Modify the provided cover letter to better match the job description while keeping my existing skills intact (please do not give the output text in the canvas like some code, rather give it as normal text). The modified cover letter should tell them how they can be benefited if I am hired. Also, make sure this text does not look like it is generated by ChatGPT.\n-Make sure when you mention my skills in my cover letter, also mention that my skills are transferable to any type of automotive (gas, diesel, electric or even Hydrogen) because my focus is on structural analysis.\n-Mention that I am already improving my German further and I am willing to learn new tools for the position if there are any tools that I do not possess in my CV.\n-Also mention that I am willing to relocate and I am flexible with the salary and would like to start as soon as possible.\n-Include a translation of the modified cover letter into English (if the original language is not English).\n-Provide a summary of the changes you made.\nInputs:\nJob Description:\n${jobDesc}\nCV:\n${cvText}\nCover Letter:\n${coverLetterText}.`;
 	
-	try {
-		// Call the OpenAI API to get the ATS score and suggestions
-		const response = await fetch('https://api.openai.com/v1/chat/completions', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${OPENAI_API_KEY}` // Use the variable here
-			},
-			body: JSON.stringify({
-				model: "gpt-4",
-				messages: [{ role: "user", content: prompt }],
-				max_tokens: 200, // Adjust as necessary for response length
-			})
-		});
+    try {
+        // Call the OpenAI API to get the ATS score and suggestions
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}` // Use the variable here
+            },
+            body: JSON.stringify({
+                model: "gpt-4",
+                messages: [{ role: "user", content: prompt }],
+                max_tokens: 200, // Adjust as necessary for response length
+            })
+        });
 
-		// Check if the response is okay
-		if (!response.ok) {
-			throw new Error(`Error: ${response.status} ${response.statusText}`);
-		}
+        // Check if the response is okay
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
 
-		// Parse the JSON response
-		const data = await response.json();
-		const atsScore = data.choices[0].message.content; // Extract ATS score and suggestions from response
+        // Parse the JSON response
+        const data = await response.json();
+        const atsScore = data.choices[0].message.content; // Extract ATS score and suggestions from response
 
-		// Display the ATS score and suggestions in the results div
-		const atsRequestResultsDiv = document.getElementById('atsRequestResults');
-		atsRequestResultsDiv.innerHTML = `<p>${atsScore}</p>`;
-		
-	} catch (error) {
-		const atsRequestResultsDiv = document.getElementById('atsRequestResults');
+        // Display the ATS score and suggestions in the results div
+        const atsRequestResultsDiv = document.getElementById('atsRequestResults');
+        atsRequestResultsDiv.innerHTML = `<p>${atsScore}</p>`;
+        
+    } catch (error) {
+        const atsRequestResultsDiv = document.getElementById('atsRequestResults');
 		atsRequestResultsDiv.innerHTML = `<p>Error retrieving ATS results from ChatGPT.<br><br>Please use the following prompt in ChatGPT to manually evaluate the ATS score and receive suggestions.</p>
-		<strong>Prompt for ChatGPT:</strong>
-		<textarea id="promptText" style="width: 90%; height: 300px;">${prompt}</textarea>
-		<button onclick="copyToClipboard(event)">Copy Prompt</button>`;
-	}
+        <strong>Prompt for ChatGPT:</strong>
+        <textarea id="promptText" style="width: 90%; height: 300px;">${prompt}</textarea>
+        <button onclick="copyToClipboard(event)">Copy Prompt</button>`;
+    }
 }
 
 // Function to copy the prompt to clipboard
@@ -932,7 +793,7 @@ function folderNameLocation() {
 	const match = regex.exec(jobDesc);
 	
 	// Get the divs where we want to display the results
-	const folderNameLocationDiv = document.getElementById('folderNameLocation');
+    const folderNameLocationDiv = document.getElementById('folderNameLocation');
 	
 	// Folder location
 	if (match) {
@@ -946,64 +807,64 @@ function folderNameLocation() {
 
 // Function to display the custom alert modal with a message
 function showAlert(message) {
-	return new Promise((resolve) => {
-		// Create the alert modal structure similar to your existing modals
-		const alertModal = document.createElement('div');
-		alertModal.classList.add('modal'); // Use the existing modal class
-		alertModal.style.display = 'block'; // Ensure the modal is visible
-		
-		// Create modal content div with your existing class
-		const modalContent = document.createElement('div');
-		modalContent.classList.add('modal-content');
-		
-		// Create the message paragraph
-		const messageParagraph = document.createElement('p');
-		messageParagraph.textContent = message;
-		modalContent.appendChild(messageParagraph);
-		
-		// Create the OK button
-		const okButton = document.createElement('button');
-		okButton.id = 'alertOkButton';
-		okButton.textContent = 'OK';
-		okButton.classList.add('modal-button'); // Use your existing button class for consistency
-		okButton.addEventListener('click', function () {
-			document.body.removeChild(alertModal); // Remove the modal from the body
-			resolve(); // Resolve the promise when OK is clicked
-		});
-		modalContent.appendChild(okButton);
-		
-		// Append modal content to the modal
-		alertModal.appendChild(modalContent);
-		
-		// Append the alert modal to the body
-		document.body.appendChild(alertModal);
-	});
+    return new Promise((resolve) => {
+        // Create the alert modal structure similar to your existing modals
+        const alertModal = document.createElement('div');
+        alertModal.classList.add('modal'); // Use the existing modal class
+        alertModal.style.display = 'block'; // Ensure the modal is visible
+        
+        // Create modal content div with your existing class
+        const modalContent = document.createElement('div');
+        modalContent.classList.add('modal-content');
+        
+        // Create the message paragraph
+        const messageParagraph = document.createElement('p');
+        messageParagraph.textContent = message;
+        modalContent.appendChild(messageParagraph);
+        
+        // Create the OK button
+        const okButton = document.createElement('button');
+        okButton.id = 'alertOkButton';
+        okButton.textContent = 'OK';
+        okButton.classList.add('modal-button'); // Use your existing button class for consistency
+        okButton.addEventListener('click', function () {
+            document.body.removeChild(alertModal); // Remove the modal from the body
+            resolve(); // Resolve the promise when OK is clicked
+        });
+        modalContent.appendChild(okButton);
+        
+        // Append modal content to the modal
+        alertModal.appendChild(modalContent);
+        
+        // Append the alert modal to the body
+        document.body.appendChild(alertModal);
+    });
 }
 
 // Helper function to get today's date in DD.MM.YYYY format
 function getCurrentDate() {
-	const today = new Date();
-	const day = String(today.getDate()).padStart(2, '0'); // Get day and pad with zero if needed
-	const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based, so add 1 and pad
-	const year = today.getFullYear(); // Get full year
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0'); // Get day and pad with zero if needed
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based, so add 1 and pad
+    const year = today.getFullYear(); // Get full year
 
-	return `${day}.${month}.${year}`; // Return date in DD.MM.YYYY format
+    return `${day}.${month}.${year}`; // Return date in DD.MM.YYYY format
 }
 
 // Helper function to get today's date in DD-MM-YYYY format
 function getCurrentDateHyphen() { 
-	const today = new Date();
-	const day = String(today.getDate()).padStart(2, '0'); // Get day and pad with zero if needed
-	const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based, so add 1 and pad
-	const year = today.getFullYear(); // Get full year
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0'); // Get day and pad with zero if needed
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based, so add 1 and pad
+    const year = today.getFullYear(); // Get full year
 
-	return `${day}-${month}-${year}`; // Return date in DD-MM-YYYY format
+    return `${day}-${month}-${year}`; // Return date in DD-MM-YYYY format
 }
 
 function resetVariables() {
-	// Reset global variables
-	companyName = undefined;
-	fullCompanyName = undefined;
+    // Reset global variables
+    companyName = undefined;
+    fullCompanyName = undefined;
 	contactPerson = undefined;
 	jobTitle = undefined;
 	jobDesc = undefined;
@@ -1014,7 +875,7 @@ function resetVariables() {
 	new_address_second = undefined;
 	new_address_third = undefined;
 	coverLetterText  = undefined;  
-	cvText = undefined;  
+    cvText = undefined;  
 	userFirstName = undefined;
 	userMiddleName = undefined;
 	userLastName = undefined;
@@ -1023,3 +884,4 @@ function resetVariables() {
 	extractCompanyName.callCount = undefined;
 	extractReferenceNumber.callCount = undefined;
 }
+
