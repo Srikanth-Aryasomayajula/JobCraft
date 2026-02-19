@@ -641,6 +641,7 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 			return new Promise(async (resolve) => {
 
 				const nameMatch = extractUserNameFromCoverLetter(coverLetterText);
+				console.log(nameMatch);
 
 				if (nameMatch && nameMatch.length > 0) {
 					[userFirstName = '', userMiddleName = '', userLastName = ''] =
