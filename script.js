@@ -639,7 +639,7 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 		// Extract the user's name from the cover letter
 		async function extractUserName(coverLetterText) {
 			return new Promise(async (resolve) => {
-
+				console.log(coverLetterText);
 				const nameMatch = extractUserNameFromCoverLetter(coverLetterText);
 				console.log(nameMatch);
 
