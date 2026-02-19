@@ -679,6 +679,9 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 					resolve("Unnamed");
 				}
 			});
+			
+			return userGivenName;
+			
 		}
 
 
