@@ -809,6 +809,8 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 			coverLetterText = await extractTextFromPDF(coverLetter);
 
 			console.log(coverLetterText);
+			userGivenName = await extractUserName(coverLetterText);
+			console.log(userGivenName);
 			
 			
 			if (cv.name.endsWith('.pdf')){
