@@ -819,11 +819,15 @@ async function generate(coverLetter, coverLetterURL, cv, cvURL, certificatesURL,
 			
 			if (cv.name.endsWith('.pdf')){
 				const arrayBuffer = await cv.arrayBuffer();
-				zipDocs.file("Lebenslauf" + ".pdf", arrayBuffer);
+				zipDocs.file("Lebenslauf" + userGivenName + ".pdf", arrayBuffer);
 				console.log("766");
 				cvText = await extractTextFromPDF(cv);
 				console.log(cvText);
 				// console.log(userGivenName);
+				var out = coverLetterDoc.getZip().generate();
+				zipDocs.file('Anschreiben_' + userGivenName + ".docx", out, { base64: true });
+				console.log("829");
+				
 			} else {
 				// goto loadFile(cvURL, async function(cvError, cvContent)
 			}
